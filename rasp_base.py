@@ -3,7 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import datetime
+from datetime import datetime, timedelta
+# from aiogram.utils.emoji import emojize
 
 
 """
@@ -32,7 +33,69 @@ class Lessons(Base):
 
 
 # engine = create_engine('sqlite:///rasp.db', echo=True)
-engine = create_engine('postgres:///rasp_db', echo=True)
+engine = create_engine('postgres:///rasp_db', echo=False)
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
+
+
+def get_lessons(class_name):
+    rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name)
+    lessons_string = ""
+    print(rasp_lessons)
+    for lsn in rasp_lessons:
+        print("LSN:", lsn)
+        print(lsn.week_day)
+        print(lsn.subject_name)
+        print(lsn.room_number)
+        lessons_string = lessons_string + " " + str(lsn.week_day) + " " + str(lsn.subject_name) + " " + str(lsn.room_number) + "\n"
+        print("0.0")
+    return lessons_string
+
+
+def get_lessons_for_week_day(class_name: String, week_day):
+    week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
+                                                     Lessons.week_day == week_days_list[week_day])  # выборка по бд
+    # rasp = {}
+    # for lsn, lsn_num in enumerate(day_lessons):
+    #     rasp[lsn_num] = {
+    #         'start': lsn.lesson_start_time,
+    #     }
+
+    day_lessons_text = "📅" + week_days_list[week_day] + "\n"
+    for lsn in day_lessons:
+        lesson_start = lsn.lesson_start_time[:-3]
+        # lesson_start_time = datetime.strptime(lesson_start, "%H:%M:%S").time()
+        # lesson_start_text = str(lesson_start_time.hour) + ":" + str(lesson_start_time.minute)
+        lesson_end = lsn.lesson_end_time[:-3]
+        subject_name = lsn.subject_name
+        room_number = lsn.room_number
+        room_number = room_number if not room_number is None else ""
+        day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} {room_number}\n"
+    return day_lessons_text
+
+
+def get_lessons_for_today(class_name: String):
+    # week_days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    current_week_day = datetime.now().weekday()
+    # rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name,
+    # Lessons.week_day == week_days[current_week_day])
+    return get_lessons_for_week_day(class_name, current_week_day)
+
+
+def get_lessons_for_yesterday(class_name: String):
+    next_week_day = (datetime.now() + timedelta(days=1)).weekday()
+    # rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name,
+    # Lessons.week_day == week_days[current_week_day])
+    return get_lessons_for_week_day(class_name, next_week_day)
+
+
+def get_all_classes():
+    classes_set = set()
+    classes = rasp_session.query(Lessons.class_name)  # выборка по бд
+    for class_name in classes:
+        classes_set.add(class_name.class_name)
+
+    return classes_set
+
 
