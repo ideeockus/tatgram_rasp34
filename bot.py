@@ -3,11 +3,12 @@ import logging
 from aiogram import Bot, Dispatcher, executor, types, utils
 from Keyboards import main_kb, teacher_kb
 import sys
+from rasp_base import rasp_session
 
 API_TOKEN = '1286086004:AAHuFMEU6Su4ytCc3ZH-eUAy1ykIi2p3HTM'
 
 # Configure logging
-logging.basicConfig(filename='app.log', level=logging.DEBUG)  # format='%(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(filename='tatgram_rasp34.log', level=logging.DEBUG)  # format='%(name)s - %(levelname)s - %(message)s'
 # logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
