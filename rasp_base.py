@@ -57,17 +57,21 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
     day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
                                                      Lessons.week_day == week_days_list[week_day])  # выборка по бд
 
-    day_lessons_text = "📅" + week_days_list[week_day] + "\n"
+    day_lessons_text = ""
     for lsn in day_lessons:
         lesson_start = lsn.lesson_start_time[:-3]
-        # lesson_start_time = datetime.strptime(lesson_start, "%H:%M:%S").time()
-        # lesson_start_text = str(lesson_start_time.hour) + ":" + str(lesson_start_time.minute)
         lesson_end = lsn.lesson_end_time[:-3]
         subject_name = lsn.subject_name
         room_number = lsn.room_number
-        room_number = room_number if not room_number is None else ""
+        room_number = room_number if room_number is not None else ""
         day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} {room_number}\n"
-    return day_lessons_text
+    if day_lessons_text == "":
+        print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
+        return ""
+    day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n"
+    day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
+    day_lessons_text_result += day_lessons_text
+    return day_lessons_text_result
 
 
 def get_lessons_for_today(class_name: str):

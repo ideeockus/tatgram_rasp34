@@ -16,7 +16,8 @@ other_class_rasp_button = KeyboardButton("Для другого класса")
 # for_teacher_button = KeyboardButton("Для учителя")
 pupil_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 pupil_kb.row(rasp_today_button, rasp_yesterday_button)
-pupil_kb.add(rasp_by_day_button, other_class_rasp_button)
+pupil_kb.add(rasp_by_day_button)
+pupil_kb.add(other_class_rasp_button)
 
 # week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"]
 # pupil_rasp_by_days_kb = ReplyKeyboardMarkup(resize_keyboard=True)

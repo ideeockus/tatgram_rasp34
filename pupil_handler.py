@@ -15,6 +15,7 @@ class PupilStates(StatesGroup):
     waiting_for_action = State()  # ожидание действий
     waiting_for_identifier = State()  # ждет название класса
     waiting_for_registration = State()
+    waiting_for_other_class_name = State()  # для другого класса
 
 
 @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
@@ -68,23 +69,22 @@ async def rasp_today(message: types.Message, state: FSMContext):
     await message.answer("Выберите денб", reply_markup=pupil_rasp_by_days_kb)
 
 
-@dp.callback_query_handler(state=PupilStates.waiting_for_action)
+@dp.callback_query_handler(lambda cq: cq.data in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+                           state=PupilStates.waiting_for_action,)
 async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state: FSMContext):
     print("пришел callback на расписание по дням")
-    available_callback_data = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
     callback_data_text = {'monday': "понедельник", 'tuesday': "вторник", 'wednesday': "Среда",
                           'thursday': "четверг", 'friday': "пятница", 'saturday': "суббота", 'sunday': "воскресенье"}
-    if callback_query.data not in available_callback_data:
-        print("Упс, такого значения callback_data не задано")
-        print(callback_query.data)
-        return
+    # if callback_query.data not in available_callback_data:
+    #     print("Упс, такого значения callback_data не задано")
+    #     print(callback_query.data)
+    #     return
     callback_data = callback_query.data
     user_data = await state.get_data()
     class_name = user_data['class_name']
-
-    print("class_name:", class_name)
-    print("user_data:", user_data)
-    print("requested day", callback_data_text[callback_data])
+    if 'other_class_name' in user_data:
+        if user_data['other_class_name'] is not None:
+            class_name = user_data['other_class_name']
 
     print(class_name, "запрос расписания на", user_data)
     lessons = "Нет уроков"
@@ -93,15 +93,29 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
         lessons = get_lessons_by_day(callback_data_text[callback_data], class_name)
         await PupilStates.waiting_for_action.set()
     await bot.answer_callback_query(callback_query.id)
-    print(lessons)
     await bot.send_message(callback_query.from_user.id, lessons)
+    await state.update_data(other_class_name=None)
 
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_today(message: types.Message, state: FSMContext):
     print("запрос расписания для другого класса")
-    await message.answer("Выберите день")
-    await message.answer("Пока в разработке")
+    await message.answer("Для какого класса вы хотите узнать расписание?")
+    await PupilStates.waiting_for_other_class_name.set()
+
+
+@dp.message_handler(state=PupilStates.waiting_for_other_class_name, content_types=types.ContentType.TEXT)
+async def rasp_today(message: types.Message, state: FSMContext):
+    print("Запрос для другого класса: ")
+    other_class_name = message.text
+    if not check_for_class(other_class_name):
+        await message.reply("Не могу найти такого класса")
+        await PupilStates.waiting_for_action.set()
+        return
+    await state.update_data(other_class_name=other_class_name)
+    await message.answer("Расписание для " + other_class_name + "\nВыберите день недели",
+                         reply_markup=pupil_rasp_by_days_kb)
+    await PupilStates.waiting_for_action.set()
 
 
 @dp.message_handler(state=PupilStates.rasp_today, content_types=types.ContentType.TEXT)  # на сегодня
