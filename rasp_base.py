@@ -67,7 +67,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} {room_number}\n"
     if day_lessons_text == "":
         print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
-        return ""
+        return "Выходной"
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n"
     day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text

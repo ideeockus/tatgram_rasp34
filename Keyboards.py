@@ -1,6 +1,7 @@
 from aiogram.types import ReplyKeyboardRemove, \
     ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton
+from datetime import datetime, timedelta
 
 pupil_role_button = KeyboardButton("Ученик")
 teacher_role_button = KeyboardButton("Учитель")
@@ -19,8 +20,15 @@ pupil_kb.row(rasp_today_button, rasp_yesterday_button)
 pupil_kb.add(rasp_by_day_button)
 pupil_kb.add(other_class_rasp_button)
 
-# week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"]
+# week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 # pupil_rasp_by_days_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+week_start_timedelta = timedelta(days=datetime.now().weekday())
+week_start_date = datetime.now() - week_start_timedelta
+
+# week_start_day = datetime.now().date().day - datetime.now().weekday()  # начало недели
+# week_start_month = datetime.now().month
+# week_start_month = datetime
+
 pupil_rasp_by_days_kb = InlineKeyboardMarkup(row_width=2)
 mon_button = InlineKeyboardButton("Понедельник", callback_data="monday")
 tue_button = InlineKeyboardButton("Вторник", callback_data="tuesday")

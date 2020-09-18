@@ -3,6 +3,7 @@ from Keyboards import pupil_kb, teacher_kb, choose_role_kb
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp
+# from pupil_handler import PupilStates
 import pupil_handler
 import teacher_handler
 from Keyboards import ReplyKeyboardRemove
@@ -57,7 +58,6 @@ async def other_msg(message: types.Message, state: FSMContext):
     print(cur_state)
     print(await state.get_data())
     await message.reply("Не могу определить что мне нужно делать")
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

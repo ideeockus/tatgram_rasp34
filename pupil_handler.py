@@ -27,6 +27,7 @@ async def rasp_today(message: types.Message, state: FSMContext):
         print("Регистрация в классе", message.text)
         await state.update_data(class_name=message.text)
         await message.answer("Окей, ты зарегистрирован", reply_markup=pupil_kb)
+        await message.answer("Теперь ты можешь узнать расписание")
         await PupilStates.waiting_for_action.set()
     else:
         await message.answer("Не могу найти такого класса, введите еще раз")
@@ -66,7 +67,7 @@ async def rasp_today(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda m: m.text == "По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_today(message: types.Message, state: FSMContext):
     print("Запрос по дням, отправляю inline клавиатуру")
-    await message.answer("Выберите денб", reply_markup=pupil_rasp_by_days_kb)
+    await message.answer("Выберите день", reply_markup=pupil_rasp_by_days_kb)
 
 
 @dp.callback_query_handler(lambda cq: cq.data in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
