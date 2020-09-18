@@ -52,15 +52,10 @@ def get_lessons(class_name):
     return lessons_string
 
 
-def get_lessons_for_week_day(class_name: String, week_day):
+def get_lessons_for_week_day(class_name: str, week_day: int):
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
                                                      Lessons.week_day == week_days_list[week_day])  # выборка по бд
-    # rasp = {}
-    # for lsn, lsn_num in enumerate(day_lessons):
-    #     rasp[lsn_num] = {
-    #         'start': lsn.lesson_start_time,
-    #     }
 
     day_lessons_text = "📅" + week_days_list[week_day] + "\n"
     for lsn in day_lessons:
@@ -75,7 +70,7 @@ def get_lessons_for_week_day(class_name: String, week_day):
     return day_lessons_text
 
 
-def get_lessons_for_today(class_name: String):
+def get_lessons_for_today(class_name: str):
     # week_days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     current_week_day = datetime.now().weekday()
     # rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name,
@@ -83,7 +78,7 @@ def get_lessons_for_today(class_name: String):
     return get_lessons_for_week_day(class_name, current_week_day)
 
 
-def get_lessons_for_yesterday(class_name: String):
+def get_lessons_for_yesterday(class_name: str):
     next_week_day = (datetime.now() + timedelta(days=1)).weekday()
     # rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name,
     # Lessons.week_day == week_days[current_week_day])
@@ -104,7 +99,7 @@ def check_for_class(class_name) -> bool:  # проверить наличие к
     return class_name.lower() in classes_set  # True or False
 
 
-def get_lessons_for_day(day: String, class_name: String):
+def get_lessons_by_day(day: str, class_name: str):
     day = day.lower()
     print("поиск в базе расписания для", class_name, "на", day)
     if day == "сегодня":
@@ -113,8 +108,10 @@ def get_lessons_for_day(day: String, class_name: String):
         return get_lessons_for_yesterday(class_name)
 
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
-    if day.capitilize() in week_days_list:
-        week_day_num = week_days_list.index(day.capitilize())
+    if day.capitalize() in week_days_list:
+        week_day_num = week_days_list.index(day.capitalize())
         return get_lessons_for_week_day(class_name, week_day_num)
+    else:
+        print("__rasp_base:", "такого дня нет в базе")
 
 

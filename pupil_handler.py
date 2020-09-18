@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types, utils
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from rasp_base import get_lessons_for_today, get_lessons_for_yesterday, check_for_class, get_lessons_for_week_day
+from rasp_base import get_lessons_for_today, get_lessons_for_yesterday, check_for_class, get_lessons_by_day
 from bot import dp, bot
 from Keyboards import pupil_kb, pupil_rasp_by_days_kb
 
@@ -72,21 +72,28 @@ async def rasp_today(message: types.Message, state: FSMContext):
 async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state: FSMContext):
     print("пришел callback на расписание по дням")
     available_callback_data = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+    callback_data_text = {'monday': "понедельник", 'tuesday': "вторник", 'wednesday': "Среда",
+                          'thursday': "четверг", 'friday': "пятница", 'saturday': "суббота", 'sunday': "воскресенье"}
     if callback_query.data not in available_callback_data:
         print("Упс, такого значения callback_data не задано")
         print(callback_query.data)
         return
-    print(callback_query)
     callback_data = callback_query.data
     user_data = await state.get_data()
     class_name = user_data['class_name']
-    print(class_name)
+
+    print("class_name:", class_name)
+    print("user_data:", user_data)
+    print("requested day", callback_data_text[callback_data])
+
+    print(class_name, "запрос расписания на", user_data)
     lessons = "Нет уроков"
     if class_name is not None:
-        if callback_data == "monday":
-            lessons = get_lessons_for_week_day(class_name, "понедельник")
-            await PupilStates.waiting_for_action.set()
+        print(callback_data)
+        lessons = get_lessons_by_day(callback_data_text[callback_data], class_name)
+        await PupilStates.waiting_for_action.set()
     await bot.answer_callback_query(callback_query.id)
+    print(lessons)
     await bot.send_message(callback_query.from_user.id, lessons)
 
 

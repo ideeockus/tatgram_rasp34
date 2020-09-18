@@ -5,6 +5,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp
 import pupil_handler
 import teacher_handler
+from Keyboards import ReplyKeyboardRemove
 
 # Configure logging
 # logging.basicConfig(filename='tatgram_rasp34.log', level=logging.DEBUG)
@@ -33,8 +34,8 @@ async def choose_role(message: types.Message, state: FSMContext):
     role = message.text.lower()
     await state.update_data(chosen_role=role)
 
-    if role == "ученик":
-        await message.reply("Введите свой класс")
+    if role == "ученик" or role == "родитель":
+        await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
         await pupil_handler.PupilStates.waiting_for_registration.set()
     elif role == "учитель":
         await teacher_handler.TeacherStates.waiting_for_action.set()
