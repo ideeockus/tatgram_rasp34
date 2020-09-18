@@ -95,7 +95,26 @@ def get_all_classes():
     classes = rasp_session.query(Lessons.class_name)  # выборка по бд
     for class_name in classes:
         classes_set.add(class_name.class_name)
-
     return classes_set
+
+
+def check_for_class(class_name) -> bool:  # проверить наличие класса в бд
+    classes_map = map(str.lower, get_all_classes())  # к нижнему регстру
+    classes_set = set(classes_map)
+    return class_name.lower() in classes_set  # True or False
+
+
+def get_lessons_for_day(day: String, class_name: String):
+    day = day.lower()
+    print("поиск в базе расписания для", class_name, "на", day)
+    if day == "сегодня":
+        return get_lessons_for_today(class_name)
+    if day == "завтра":
+        return get_lessons_for_yesterday(class_name)
+
+    week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    if day.capitilize() in week_days_list:
+        week_day_num = week_days_list.index(day.capitilize())
+        return get_lessons_for_week_day(class_name, week_day_num)
 
 

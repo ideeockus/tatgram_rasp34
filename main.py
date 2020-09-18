@@ -15,8 +15,9 @@ class MainStates(StatesGroup):
 
 
 @dp.message_handler(commands=['start'], state="*")
-async def start(message: types.Message):
+async def start(message: types.Message, state: FSMContext):
     print("start", message.from_user)
+    await state.finish()
     """
     This handler will be called when user sends `/start` command
     """
@@ -41,7 +42,19 @@ async def choose_role(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state="*")
-async def other_msg(message: types.Message):
+async def other_msg(message: types.Message, state: FSMContext):
+    print("Unknown message")
+
+    user_data = await state.get_data()
+    if 'chosen_role' not in user_data.keys():
+        await message.answer("Ой, я кажется забыл кто вы")
+        await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+        await MainStates.wait_for_role.set()
+        return
+
+    cur_state = await state.get_state()
+    print(cur_state)
+    print(await state.get_data())
     await message.reply("Не могу определить что мне нужно делать")
 
 
