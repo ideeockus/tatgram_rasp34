@@ -24,18 +24,23 @@ pupil_kb.add(other_class_rasp_button)
 # pupil_rasp_by_days_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 week_start_timedelta = timedelta(days=datetime.now().weekday())
 week_start_date = datetime.now() - week_start_timedelta
+week_days_text = []
+dd = [(week_start_date+timedelta(days=i)).date() for i in range(7)]
+for d in list(map(lambda d: str(d).split("-")[1:], dd)):
+    d.reverse()
+    week_days_text.append(".".join(d))
 
 # week_start_day = datetime.now().date().day - datetime.now().weekday()  # начало недели
 # week_start_month = datetime.now().month
 # week_start_month = datetime
 
 pupil_rasp_by_days_kb = InlineKeyboardMarkup(row_width=2)
-mon_button = InlineKeyboardButton("Понедельник", callback_data="monday")
-tue_button = InlineKeyboardButton("Вторник", callback_data="tuesday")
-wed_button = InlineKeyboardButton("Среда", callback_data="wednesday")
-thu_button = InlineKeyboardButton("Четверг", callback_data="thursday")
-fri_button = InlineKeyboardButton("Пятница", callback_data="friday")
-sat_button = InlineKeyboardButton("Суббота", callback_data="saturday")
+mon_button = InlineKeyboardButton("Понедельник "+week_days_text[0], callback_data="monday")
+tue_button = InlineKeyboardButton("Вторник "+week_days_text[1], callback_data="tuesday")
+wed_button = InlineKeyboardButton("Среда "+week_days_text[2], callback_data="wednesday")
+thu_button = InlineKeyboardButton("Четверг "+week_days_text[3], callback_data="thursday")
+fri_button = InlineKeyboardButton("Пятница "+week_days_text[4], callback_data="friday")
+sat_button = InlineKeyboardButton("Суббота "+week_days_text[5], callback_data="saturday")
 pupil_rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
 # for week_day in week_days_list:
 #     week_day_button = InlineKeyboardButton(week_day, callback_data="rasp_by_day_button")

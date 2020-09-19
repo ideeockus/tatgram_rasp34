@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from rasp_base import get_lessons_for_today, get_lessons_for_yesterday, check_for_class, get_lessons_by_day
 from bot import dp, bot
-from Keyboards import pupil_kb, pupil_rasp_by_days_kb
+from Keyboards import pupil_kb, pupil_rasp_by_days_kb, ReplyKeyboardRemove
 
 # logging.basicConfig(filename='tatgram_rasp34.log', level=logging.DEBUG)
 
@@ -76,10 +76,6 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     print("пришел callback на расписание по дням")
     callback_data_text = {'monday': "понедельник", 'tuesday': "вторник", 'wednesday': "Среда",
                           'thursday': "четверг", 'friday': "пятница", 'saturday': "суббота", 'sunday': "воскресенье"}
-    # if callback_query.data not in available_callback_data:
-    #     print("Упс, такого значения callback_data не задано")
-    #     print(callback_query.data)
-    #     return
     callback_data = callback_query.data
     user_data = await state.get_data()
     class_name = user_data['class_name']
@@ -89,13 +85,23 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
 
     print(class_name, "запрос расписания на", user_data)
     lessons = "Нет уроков"
+    print(class_name)
     if class_name is not None:
         print(callback_data)
         lessons = get_lessons_by_day(callback_data_text[callback_data], class_name)
         await PupilStates.waiting_for_action.set()
+    else:
+        await PupilStates.waiting_for_class_name.set()
+        await bot.send_message(chat_id=callback_query.message.chat.id, text="Напомните номер класса, пожалуйста")
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, lessons)
     await state.update_data(other_class_name=None)
+    print("удаляю клавиатуру")
+    print(callback_query)
+    # await bot.edit_message_reply_markup(chat_id=callback_query.message.chat.id,
+    #                                     message_id=callback_query.message.message_id,
+    #                                     reply_markup=ReplyKeyboardRemove)
+    await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
