@@ -55,10 +55,9 @@ async def rasp_today(message: types.Message, state: FSMContext):
 
     photo = await bot.get_file(photo_id)
     photo_path = photo.file_path
-    photo_name = str(datetime.now()) + ".jpg"
     loaded_file: io.BytesIO = await bot.download_file(photo_path)
     yandex_disk = yadisk.YaDisk(token=yadisk_token)
-    yandex_disk.upload(loaded_file, "app:/" + "photo" + photo_name)
+    yandex_disk.upload(loaded_file, "app:/" + "photo" + str(datetime.now()))
     await message.reply("Готово")
 
 
