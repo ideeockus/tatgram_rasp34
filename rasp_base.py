@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
+from configuration import postgresql_db_url
 # from aiogram.utils.emoji import emojize
 from configuration import postgresql_db_password
 
@@ -34,7 +35,8 @@ class Lessons(Base):
 
 
 # engine = create_engine('sqlite:///rasp.db', echo=True)
-postgres_db = "postgres://auovkhqgqesnwt:" + postgresql_db_password + "@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"
+# postgres_db = "postgres://auovkhqgqesnwt:" + postgresql_db_password + "@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"
+postgres_db = postgresql_db_url
 # engine = create_engine('sqlite:///databases/rasp.db', echo=True)
 engine = create_engine(postgres_db, echo=False)
 Session = sessionmaker(bind=engine)
