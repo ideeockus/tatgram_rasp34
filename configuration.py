@@ -13,5 +13,3 @@ try:
         raise KeyError
 except KeyError:
     print("os environments YADISK_TOKEN, TG_BOT_TOKEN, PGSQL_DB_PASSWORD not found")
-
-
