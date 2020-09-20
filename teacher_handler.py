@@ -12,8 +12,7 @@ from bot import dp, bot
 import yadisk
 from configuration import yadisk_token
 from Keyboards import teacher_photo_sending_kb, teacher_kb
-
-y = yadisk.YaDisk(token=yadisk_token)
+import io
 
 
 class TeacherStates(StatesGroup):
@@ -46,17 +45,19 @@ async def rasp_today(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=TeacherStates.waiting_for_photo, content_types=types.ContentType.TEXT)
 async def wait_for_photo_got_text(message: types.Message):
-    await message.reply("Круто, но я все еще жду фото")
+    await message.reply("Понятно, но я все еще жду фото")
 
 
 @dp.message_handler(state=TeacherStates.waiting_for_photo, content_types=types.ContentType.PHOTO)
 async def rasp_today(message: types.Message, state: FSMContext):
     print("Принимаю фото")
-    photo = message.photo
-    print(photo)
-    await message.photo[-1].download("files/photo"+str(datetime.now()))
+    photo_id = message.photo[-1].file_id
 
-    # file_name = message.document.file_name
+    photo = await bot.get_file(photo_id)
+    photo_path = photo.file_path
+    loaded_file: io.BytesIO = await bot.download_file(photo_path)
+    yandex_disk = yadisk.YaDisk(token=yadisk_token)
+    yandex_disk.upload(loaded_file, "app:/" + "photo" + str(datetime.now()))
     await message.reply("Готово")
 
 
@@ -68,7 +69,9 @@ async def rasp_today(message: types.Message, state: FSMContext):
 
     file = await bot.get_file(file_id)
     file_path = file.file_path
-    await bot.download_file(file_path, "files/" + file_name)
+    loaded_file: io.BytesIO = await bot.download_file(file_path)
+    yandex_disk = yadisk.YaDisk(token=yadisk_token)
+    yandex_disk.upload(loaded_file, "app:/"+file_name)
     await message.reply("Готово, документ оправлен")
 
 

@@ -33,8 +33,9 @@ class Lessons(Base):
     room_number = Column(String)
 
 
+postgres_db = "<ЗДЕСЬ ДОЛЖНА БЫТЬ ССЫЛКА С АВТОРИЗАЦИЕЙ В БД>"  # для запуска нужно вписать ссылку со всеми данными к БД
 # engine = create_engine('sqlite:///databases/rasp.db', echo=True)
-engine = create_engine('postgres:///rasp_db', echo=True)
+engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)

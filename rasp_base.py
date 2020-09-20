@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 # from aiogram.utils.emoji import emojize
+from configuration import postgresql_db_password
 
 
 """
@@ -33,7 +34,9 @@ class Lessons(Base):
 
 
 # engine = create_engine('sqlite:///rasp.db', echo=True)
-engine = create_engine('postgres:///rasp_db', echo=False)
+postgres_db = "postgres://auovkhqgqesnwt:" + postgresql_db_password + "@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"
+# engine = create_engine('sqlite:///databases/rasp.db', echo=True)
+engine = create_engine(postgres_db, echo=False)
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
