@@ -31,18 +31,22 @@ class Lessons(Base):
     lesson_end_time = Column(String)
     subject_name = Column(String)
     room_number = Column(String)
+    teacher_name = Column(String)
 
 
-postgres_db = "<ЗДЕСЬ ДОЛЖНА БЫТЬ ССЫЛКА С АВТОРИЗАЦИЕЙ В БД>"  # для запуска нужно вписать ссылку со всеми данными к БД
-# engine = create_engine('sqlite:///databases/rasp.db', echo=True)
+postgres_db = "postgres://auovkhqgqesnwt:fa20dd28eca1d0cdae4bfdc646baef253a99aa3e423ef3fd413ee98abbb195d8@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"  # для запуска нужно вписать ссылку со всеми данными к БД
+# engine = create_engine('sqlite:///databases/rasp.db', echo=False)
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
-rasp_excel = load_workbook("databases/raspisanie.xlsx", read_only=True)
+rasp_excel = load_workbook("databases/Raspisanie_1.xlsx", read_only=True)
 rasp = rasp_excel.active
+
+for lsn in rasp_session.query(Lessons).all():  # очитска предыдущей таблицы
+    rasp_session.delete(lsn)
 
 for row_num in range(3, rasp.max_row):
     class_name = rasp[row_num][1].value
@@ -51,6 +55,7 @@ for row_num in range(3, rasp.max_row):
     lesson_end_time = str(rasp[row_num][4].value)
     subject_name = rasp[row_num][5].value
     room_number = rasp[row_num][6].value
+    teacher_name = rasp[row_num][7].value
 
     if class_name is None:
         continue
@@ -62,9 +67,10 @@ for row_num in range(3, rasp.max_row):
         lesson_end_time=lesson_end_time,
         subject_name=subject_name,
         room_number=room_number,
+        teacher_name=teacher_name,
     )
     rasp_session.add(lesson)
-    print(class_name, week_day, lesson_start_time, subject_name, room_number)
+    print(class_name, week_day, lesson_start_time, subject_name, room_number, teacher_name)
 
 rasp_session.commit()
 

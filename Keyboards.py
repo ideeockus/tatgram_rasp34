@@ -34,14 +34,14 @@ for d in list(map(lambda d: str(d).split("-")[1:], dd)):
 # week_start_month = datetime.now().month
 # week_start_month = datetime
 
-pupil_rasp_by_days_kb = InlineKeyboardMarkup(row_width=2)
+rasp_by_days_kb = InlineKeyboardMarkup(row_width=2)
 mon_button = InlineKeyboardButton("Понедельник "+week_days_text[0], callback_data="monday")
 tue_button = InlineKeyboardButton("Вторник "+week_days_text[1], callback_data="tuesday")
 wed_button = InlineKeyboardButton("Среда "+week_days_text[2], callback_data="wednesday")
 thu_button = InlineKeyboardButton("Четверг "+week_days_text[3], callback_data="thursday")
 fri_button = InlineKeyboardButton("Пятница "+week_days_text[4], callback_data="friday")
 sat_button = InlineKeyboardButton("Суббота "+week_days_text[5], callback_data="saturday")
-pupil_rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
+rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
 # for week_day in week_days_list:
 #     week_day_button = InlineKeyboardButton(week_day, callback_data="rasp_by_day_button")
 #     pupil_rasp_by_days_kb.insert(week_day_button)
