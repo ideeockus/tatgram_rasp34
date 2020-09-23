@@ -40,7 +40,7 @@ class Lessons(Base):
 postgres_db = postgresql_db_url
 # engine = create_engine('sqlite:///databases/rasp.db', echo=True)
 engine = create_engine(postgres_db, echo=False)
-engine = create_engine('sqlite:///databases/rasp.db', echo=False)
+# engine = create_engine('sqlite:///databases/rasp.db', echo=False)
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
