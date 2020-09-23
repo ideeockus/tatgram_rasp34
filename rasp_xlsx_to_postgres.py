@@ -1,9 +1,9 @@
 from openpyxl import load_workbook
-from sqlalchemy import create_engine
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
+from bot_storage.configuration import postgresql_db_url
 
 
 """
@@ -34,7 +34,10 @@ class Lessons(Base):
     teacher_name = Column(String)
 
 
-postgres_db = "<ТУТ ССЫЛКА НА БД>"
+postgres_db = ""  # <ТУТ ССЫЛКА НА БД>
+if postgres_db == "":
+    postgres_db = postgresql_db_url
+
 # engine = create_engine('sqlite:///databases/rasp.db', echo=False)
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)

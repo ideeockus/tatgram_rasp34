@@ -1,19 +1,13 @@
-import ujson
-import logging
-from aiogram import Bot, Dispatcher, executor, types, utils
-from Keyboards import pupil_kb, teacher_kb, choose_role_kb
-import sys
+from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from rasp_base import get_lessons, get_lessons_for_today, get_lessons_for_yesterday
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from datetime import datetime
 from bot import dp, bot
 import yadisk
-from configuration import yadisk_token
-from Keyboards import teacher_photo_sending_kb, teacher_kb, rasp_by_days_kb, InlineKeyboardButton, InlineKeyboardMarkup
+from bot_storage.configuration import yadisk_token
+from bot_storage.Keyboards import teacher_photo_sending_kb, teacher_kb, rasp_by_days_kb, InlineKeyboardButton, InlineKeyboardMarkup
 import io
-from rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
+from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
 
 
 class TeacherStates(StatesGroup):
@@ -26,7 +20,7 @@ class TeacherStates(StatesGroup):
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
-async def rasp(message: types.Message, state: FSMContext):
+async def rasp(message: types.Message):
     print("Запрос расписания учителей")
     # await message.reply("Подождите...")
     teachers_set = get_all_teachers()
@@ -39,7 +33,6 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
     teacher_name = message.text.lower()
     print("запрошено раписание учителя", teacher_name)
     teachers_set = get_all_teachers()
-    # print(teacher_name)
     # print(teachers_set)
     if teacher_name in teachers_set:
         await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
@@ -48,7 +41,7 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
         teachers_choose_list = []
         teachers_choose_list_kb = InlineKeyboardMarkup(row_width=2)
         for teacher_full_name in teachers_set:
-            if teacher_full_name.find(teacher_name) > 0:
+            if teacher_full_name.find(teacher_name) >= 0:
                 teachers_choose_list.append(teacher_full_name)
                 teacher_full_name_button = InlineKeyboardButton(teacher_full_name.title(), callback_data=teacher_full_name)
                 teachers_choose_list_kb.insert(teacher_full_name_button)
@@ -100,7 +93,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
 
 
 @dp.message_handler(lambda m: m.text == "Отправить фото", state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
-async def send_photo(message: types.Message, state: FSMContext):
+async def wanna_send_photo(message: types.Message):
     print("пользователь хочет прислать фото")
     await message.answer("Пожалуйста, отправьте фотографию", reply_markup=teacher_photo_sending_kb)
     await TeacherStates.waiting_for_photo.set()
