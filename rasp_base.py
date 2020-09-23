@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from configuration import postgresql_db_url
 # from aiogram.utils.emoji import emojize
-from configuration import postgresql_db_password
+# from configuration import postgresql_db_password
 
 
 """
