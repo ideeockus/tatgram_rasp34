@@ -34,7 +34,7 @@ class Lessons(Base):
     teacher_name = Column(String)
 
 
-postgres_db = "postgres://auovkhqgqesnwt:fa20dd28eca1d0cdae4bfdc646baef253a99aa3e423ef3fd413ee98abbb195d8@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"  # для запуска нужно вписать ссылку со всеми данными к БД
+postgres_db = "<ТУТ ССЫЛКА НА БД>"
 # engine = create_engine('sqlite:///databases/rasp.db', echo=False)
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
