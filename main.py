@@ -53,6 +53,7 @@ async def unreg_msg(message: types.Message, state: FSMContext):
     print("Unregistered message")
     user_id = message.from_user.id
     user_role = roles_base.get_role(user_id)
+    print(message.from_user.id, user_role)
     if user_role is None:
         await message.answer("Ой, я кажется забыл кто вы")
         await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
@@ -66,7 +67,7 @@ async def unreg_msg(message: types.Message, state: FSMContext):
             await teacher_handler.TeacherStates.waiting_for_action.set()
             # await message.reply("", reply_markup=teacher_kb)
             if message.text == "Расписание учителей":
-                await teacher_handler.rasp(message)
+                await teacher_handler.rasp(message, state)
             if message.text == "Отправить фото":
                 await teacher_handler.wanna_send_photo(message)
         elif user_role == "master":

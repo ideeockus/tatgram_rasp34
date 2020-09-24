@@ -65,6 +65,10 @@ secret_role_kb.add(broadcast_button)
 secret_role_kb.add(pupils_rasp_button, teacher_rasp_button)
 # secret_role_kb.add(teachers_rasp_button)
 
+secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+cancel_button = KeyboardButton("Отмена")
+secret_role_cancel_kb.add(cancel_button)
+
 
 
 

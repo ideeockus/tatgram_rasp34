@@ -7,8 +7,9 @@ from bot_storage.roles_base import get_all_users
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 import asyncio
 from bot_storage import rasp_base
-from bot_storage.Keyboards import rasp_by_days_kb
+from bot_storage.Keyboards import rasp_by_days_kb, secret_role_cancel_kb, secret_role_kb
 from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ParseMode
 
 
 class MasterStates(StatesGroup):
@@ -25,8 +26,14 @@ async def stats(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda m: m.text == "Рассылка", state=MasterStates.waiting_for_action)
 async def broadcast(message: types.Message, state: FSMContext):
-    await message.answer("Введите текст который хотите разослать")
+    await message.answer("Введите текст или картинку для рассылки", reply_markup=secret_role_cancel_kb)
     await MasterStates.waiting_for_text_to_broadcast.set()
+
+
+@dp.message_handler(lambda m: m.text == "Отмена", state=MasterStates.waiting_for_text_to_broadcast)
+async def broadcast(message: types.Message, state: FSMContext):
+    await message.answer("Хорошо", reply_markup=secret_role_kb)
+    await MasterStates.waiting_for_action.set()
 
 
 @dp.message_handler(lambda m: m.text == "Расписание школьников", state=MasterStates.waiting_for_action)
@@ -90,18 +97,19 @@ async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: F
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
 
-@dp.message_handler(state=MasterStates.waiting_for_text_to_broadcast, content_types=types.ContentType.TEXT)
+@dp.message_handler(state=MasterStates.waiting_for_text_to_broadcast)
 async def text_for_broadcast_gotten(message: types.Message):
-    print("Рассылка")
+    print("Текстовая рассылка")
     users_id_set = get_all_users()
     users_count = len(users_id_set)
     bad_users_count = 0
-    text_to_broadcast = message.text
+    text_to_broadcast = message.md_text
     print(text_to_broadcast)
-    await message.answer(f"Рассылаю {users_count} пользователям")
+    await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=secret_role_kb)
     for user_id in users_id_set:
         try:
-            await bot.send_message(user_id, text_to_broadcast)
+            await bot.send_message(user_id, text_to_broadcast, parse_mode=ParseMode.MARKDOWN)
+            # await bot.send_photo(user_id, photo_to_broadcast)
         except BotBlocked:
             print(f"Target [ID:{user_id}]: blocked by user")
             bad_users_count += 1
@@ -117,6 +125,27 @@ async def text_for_broadcast_gotten(message: types.Message):
             bad_users_count += 1
         except TelegramAPIError:
             print(f"Target [ID:{user_id}]: failed")
+            bad_users_count += 1
+    await message.reply(f"Разослано {users_count-bad_users_count} сообщений. {bad_users_count} не удалось отправить")
+    await MasterStates.waiting_for_action.set()
+
+
+@dp.message_handler(state=MasterStates.waiting_for_text_to_broadcast, content_types=types.ContentType.PHOTO)
+async def text_for_broadcast_gotten(message: types.Message):
+    print("Рассылка фото")
+    users_id_set = get_all_users()
+    users_count = len(users_id_set)
+    bad_users_count = 0
+    # text_to_broadcast = message.md_text
+    photo_to_broadcast = message.photo[-1].file_id
+    # print(text_to_broadcast)
+    await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=secret_role_kb)
+    for user_id in users_id_set:
+        try:
+            # await bot.send_message(user_id, text_to_broadcast, parse_mode=ParseMode.MARKDOWN)
+            await bot.send_photo(user_id, photo_to_broadcast)
+        except (BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError):
+            print(f"Target [ID:{user_id}]: fault")
             bad_users_count += 1
     await message.reply(f"Разослано {users_count-bad_users_count} сообщений. {bad_users_count} не удалось отправить")
     await MasterStates.waiting_for_action.set()
@@ -144,12 +173,12 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
 
     if teacher_name is not None:
         teacher_lessons = rasp_base.get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
-        await bot.send_message(callback_query.from_user.id, teacher_lessons)
+        await bot.send_message(callback_query.from_user.id, teacher_lessons, parse_mode=ParseMode.MARKDOWN)
         await state.update_data(rasp_for_teacher=None)
         await state.update_data(rasp_for_class=None)
     if class_name is not None:
         pupils_lessons = rasp_base.get_lessons_for_week_day(class_name, callback_data_text[callback_data])
-        await bot.send_message(callback_query.from_user.id, pupils_lessons)
+        await bot.send_message(callback_query.from_user.id, pupils_lessons, parse_mode=ParseMode.MARKDOWN)
         await state.update_data(rasp_for_teacher=None)
         await state.update_data(rasp_for_class=None)
     # else:

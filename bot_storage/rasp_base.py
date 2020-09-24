@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from bot_storage.configuration import postgresql_db_url
+from aiogram.utils.markdown import bold, code, italic, text
 
 """
 A - 0 empty column
@@ -36,20 +37,6 @@ Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
 
-# def get_lessons(class_name):
-#     rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name)
-#     lessons_string = ""
-#     print(rasp_lessons)
-#     for lsn in rasp_lessons:
-#         print("LSN:", lsn)
-#         print(lsn.week_day)
-#         print(lsn.subject_name)
-#         print(lsn.room_number)
-#         lessons_string = lessons_string + " " + str(lsn.week_day) + " " + str(lsn.subject_name) + " " + str(lsn.room_number) + "\n"
-#         print("0.0")
-#     return lessons_string
-
-
 def get_lessons_for_week_day(class_name: str, week_day: int):
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
@@ -60,13 +47,15 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         lesson_end = lsn.lesson_end_time[:-3]
         subject_name = lsn.subject_name
         room_number = lsn.room_number
-        room_number = room_number if room_number is not None else ""
+        room_number = text("кабинет ", bold(room_number)) if room_number is not None else ""
         teacher_name = lsn.teacher_name
         teacher_name = f"\n{teacher_name}" if teacher_name is not None else ""
-        day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} кабинет {room_number}{teacher_name}\n\n"
+        # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} кабинет {room_number}{teacher_name}\n\n"
+        day_lessons_text += text(f"[[{lesson_start} - {lesson_end}]]",
+                                 subject_name, room_number, italic(teacher_name), "\n\n")
     if day_lessons_text == "":
         print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
-        return "Выходной"  # EDIT THIS LINE LATER
+        day_lessons_text = "Выходной"  # EDIT THIS LINE LATER
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
     day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
@@ -142,9 +131,11 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
         teacher_name = lsn.teacher_name
         class_name = lsn.class_name
         room_number = lsn.room_number
-        room_number = f"в кабинете {room_number}" if room_number is not None else ""
+        room_number = text(f"в кабинете ", bold(room_number)) if room_number is not None else ""
         # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} у {class_name} {room_number}\n"
-        day_lessons_dict[lesson_start] = f"[{lesson_start} - {lesson_end}] {subject_name} у {class_name} {room_number}\n"
+        # day_lessons_dict[lesson_start] = f"[{lesson_start} - {lesson_end}] {subject_name} у {class_name} {room_number}\n"
+        day_lessons_dict[lesson_start] = text(f"[[{lesson_start} - {lesson_end}]]",
+                                              italic(subject_name), "у", bold(class_name), room_number, "\n\n")
     if len(day_lessons_dict) == 0:
         print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
         day_lessons_dict['dayoff'] = "Выходной"

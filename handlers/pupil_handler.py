@@ -5,6 +5,7 @@ from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterd
 from bot import dp, bot
 from bot_storage.Keyboards import pupil_kb, rasp_by_days_kb, ReplyKeyboardRemove
 from bot_storage import roles_base
+from aiogram.types import ParseMode
 
 from actions import feedback
 
@@ -41,12 +42,12 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
     if class_name is not None:
         if message.text.lower() == "на сегодня":
             lessons = get_lessons_for_today(class_name)
-            await message.answer(lessons)
+            await message.answer(lessons, parse_mode=ParseMode.MARKDOWN)
             await PupilStates.waiting_for_action.set()
         if message.text.lower() == "на завтра":
             lessons = get_lessons_for_yesterday(class_name)
             # print("прямо перед отправкой", lessons)
-            await message.answer(lessons)
+            await message.answer(lessons, parse_mode=ParseMode.MARKDOWN)
             await PupilStates.waiting_for_action.set()
         return
 
@@ -79,13 +80,13 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     if class_name is not None:
         print(callback_data)
         lessons = get_lessons_by_day(callback_data_text[callback_data], class_name)
-        print(lessons)
+        # print(lessons)
         await PupilStates.waiting_for_action.set()
     else:
         await PupilStates.waiting_for_class_name.set()
         await bot.send_message(chat_id=callback_query.message.chat.id, text="Напомните номер класса, пожалуйста")
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, lessons)
+    await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN)
     await state.update_data(other_class_name=None)
     # await bot.edit_message_reply_markup(chat_id=callback_query.message.chat.id,
     #                                     message_id=callback_query.message.message_id,

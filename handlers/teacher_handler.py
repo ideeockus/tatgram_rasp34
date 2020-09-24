@@ -9,6 +9,7 @@ from bot_storage.Keyboards import teacher_photo_sending_kb, teacher_kb, rasp_by_
 import io
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
 from actions import feedback
+from aiogram.types import ParseMode
 
 
 class TeacherStates(StatesGroup):
@@ -21,11 +22,29 @@ class TeacherStates(StatesGroup):
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
-async def rasp(message: types.Message):
+async def rasp(message: types.Message, state: FSMContext):
     print("Запрос расписания учителей")
+    user_data = await state.get_data()
+    if 'teacher_name' in user_data:
+        last_teacher_kb = InlineKeyboardMarkup(row_width=2)
+        last_teacher_button = InlineKeyboardButton(user_data['teacher_name'].title(), callback_data=user_data['teacher_name'])
+        new_teacher_button = InlineKeyboardButton("Для другого учителя", callback_data="other_teacher")
+        last_teacher_kb.add(last_teacher_button, new_teacher_button)
+        await message.answer("Для кого хотите узнать расписание?", reply_markup=last_teacher_kb)
+        await TeacherStates.waiting_for_teacher_name.set()
+        return
+
     # await message.reply("Подождите...")
-    teachers_set = get_all_teachers()
+    # teachers_set = get_all_teachers()
     await message.reply("Введите имя, пожалуйста")
+    await TeacherStates.waiting_for_teacher_name.set()
+
+
+@dp.callback_query_handler(lambda cq: cq.data == "other_teacher", state=TeacherStates.waiting_for_teacher_name)
+async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, "Введите имя, пожалуйста")
+    await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
     await TeacherStates.waiting_for_teacher_name.set()
 
 
@@ -47,12 +66,12 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
                 teacher_full_name_button = InlineKeyboardButton(teacher_full_name.title(), callback_data=teacher_full_name)
                 teachers_choose_list_kb.insert(teacher_full_name_button)
         # print("Список вероятных значений:", teachers_choose_list)
-        if len(teachers_choose_list) == 1:
-            await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
-            await state.update_data(rasp_for_teacher=teachers_choose_list[0].title())
-        elif len(teachers_choose_list) < 1:
+        # if len(teachers_choose_list) == 1:
+        #     await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
+        #     await state.update_data(rasp_for_teacher=teachers_choose_list[0].title())
+        if len(teachers_choose_list) < 1:
             await message.reply("Я не нашел такого учителя")
-        elif len(teachers_choose_list) > 1:
+        elif len(teachers_choose_list) >= 1:
             await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
             return
     await TeacherStates.waiting_for_action.set()
@@ -62,6 +81,9 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
 async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: FSMContext):
     callback_data = callback_query.data
     teacher_name = callback_data
+
+    await state.update_data(teacher_name=teacher_name)
+
     print("выбор", teacher_name, "с инлайн клавиатуры")
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
@@ -89,7 +111,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
         await TeacherStates.waiting_for_teacher_name.set()
         await bot.send_message(chat_id=callback_query.message.chat.id, text="для кого вы хотите узнать распиание?")
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, lessons)
+    await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN)
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
 
