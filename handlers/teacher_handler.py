@@ -8,6 +8,7 @@ from bot_storage.configuration import yadisk_token
 from bot_storage.Keyboards import teacher_photo_sending_kb, teacher_kb, rasp_by_days_kb, InlineKeyboardButton, InlineKeyboardMarkup
 import io
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
+from actions import feedback
 
 
 class TeacherStates(StatesGroup):
@@ -137,6 +138,12 @@ async def document_getting(message: types.Message, state: FSMContext):
     yandex_disk = yadisk.YaDisk(token=yadisk_token)
     yandex_disk.upload(loaded_file, "app:/"+file_name)
     await message.reply("Готово, документ оправлен")
+
+
+@dp.message_handler(lambda m: m.text == "Обратная связь", state=TeacherStates.waiting_for_action)
+async def rasp_yesterday(message: types.Message, state: FSMContext):
+    await message.reply("Что вы хотите сообщить?")
+    await feedback.make_feedback(TeacherStates.waiting_for_action)
 
 
 

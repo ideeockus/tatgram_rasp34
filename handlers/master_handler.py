@@ -43,9 +43,8 @@ async def teachers_rasp(message: types.Message):
 
 @dp.message_handler(state=MasterStates.waiting_for_class_name)
 async def pupil_rasp_2(message: types.Message, state: FSMContext):
-    classes_set = rasp_base.get_all_classes()
+    # classes_set = rasp_base.get_all_classes()
     class_name = message.text.lower()
-    # if class_name in classes_set:
     if rasp_base.check_for_class(class_name):
         await state.update_data(rasp_for_class=class_name)
         await message.answer("Выберите день", reply_markup=rasp_by_days_kb)
@@ -78,15 +77,6 @@ async def teachers_rasp_2(message: types.Message, state: FSMContext):
             await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
             return
     await MasterStates.waiting_for_action.set()
-
-    # teacher_name = message.text.lower()
-    # teachers_set = rasp_base.get_all_teachers()
-    # if teacher_name in teachers_set:
-    #     await state.update_data(rasp_for_teacher=teacher_name)
-    #     await message.answer("Выберите день", reply_markup=rasp_by_days_kb)
-    #     await MasterStates.waiting_for_action.set()
-    # else:
-    #     await message.reply("Такого учителя нет в бд")
 
 
 @dp.callback_query_handler(state=MasterStates.waiting_for_teacher_name)
@@ -138,9 +128,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     callback_data_text = {'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3, 'friday': 4, 'saturday': 5, 'sunday': 6}
     callback_data = callback_query.data
     user_data = await state.get_data()
-
-    print(user_data)
-
+    # print(user_data)
     class_name = None
     teacher_name = None
 
@@ -152,17 +140,17 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
         teacher_name = user_data['rasp_for_teacher']
     except KeyError:
         pass
-    print(class_name, teacher_name)
+    # print(class_name, teacher_name)
 
     if teacher_name is not None:
         teacher_lessons = rasp_base.get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
         await bot.send_message(callback_query.from_user.id, teacher_lessons)
         await state.update_data(rasp_for_teacher=None)
-        # await state.update_data(rasp_for_class=None)
+        await state.update_data(rasp_for_class=None)
     if class_name is not None:
         pupils_lessons = rasp_base.get_lessons_for_week_day(class_name, callback_data_text[callback_data])
         await bot.send_message(callback_query.from_user.id, pupils_lessons)
-        # await state.update_data(rasp_for_teacher=None)
+        await state.update_data(rasp_for_teacher=None)
         await state.update_data(rasp_for_class=None)
     # else:
     #     await bot.send_message(callback_query.from_user.id, f"Какая-то ошибка произошла\n{teacher_name}\n{class_name}")

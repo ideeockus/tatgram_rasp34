@@ -1,4 +1,4 @@
-from aiogram import Bot, Dispatcher, executor, types, utils
+from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterday, check_for_class, get_lessons_by_day
@@ -6,7 +6,7 @@ from bot import dp, bot
 from bot_storage.Keyboards import pupil_kb, rasp_by_days_kb, ReplyKeyboardRemove
 from bot_storage import roles_base
 
-# logging.basicConfig(filename='tatgram_rasp34.log', level=logging.DEBUG)
+from actions import feedback
 
 
 class PupilStates(StatesGroup):
@@ -57,7 +57,7 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda m: m.text == "По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_by_day(message: types.Message, state: FSMContext):
-    print("Запрос по дням, отправляю inline клавиатуру")
+    # print("Запрос по дням, отправляю inline клавиатуру")
     await message.answer("Выберите день", reply_markup=rasp_by_days_kb)
 
 
@@ -95,14 +95,14 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_for_other_class(message: types.Message, state: FSMContext):
-    print("запрос расписания для другого класса")
+    # print("запрос расписания для другого класса")
     await message.answer("Для какого класса вы хотите узнать расписание?")
     await PupilStates.waiting_for_other_class_name.set()
 
 
 @dp.message_handler(state=PupilStates.waiting_for_other_class_name, content_types=types.ContentType.TEXT)
 async def rasp_for_other_class(message: types.Message, state: FSMContext):
-    print("Запрос для другого класса: ")
+    # print("Запрос для другого класса: ")
     other_class_name = message.text
     if not check_for_class(other_class_name):
         await message.reply("Не могу найти такого класса")
@@ -115,9 +115,15 @@ async def rasp_for_other_class(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=PupilStates.waiting_for_action)
-async def rasp_yesterday(message: types.Message, state: FSMContext):
+async def rasp_yesterday(message: types.Message):
     print("Запрос расписания учителей учеником")
-    # await message.reply("Вам не доступна эта функция")
+
+
+@dp.message_handler(lambda m: m.text == "Обратная связь", state=PupilStates.waiting_for_action)
+async def rasp_yesterday(message: types.Message):
+    await message.reply("Что вы хотите сообщить?")
+    await feedback.make_feedback(PupilStates.waiting_for_action)
+
 
 
 

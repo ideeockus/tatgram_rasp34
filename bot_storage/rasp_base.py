@@ -30,28 +30,24 @@ class Lessons(Base):
     teacher_name = Column(String)
 
 
-# engine = create_engine('sqlite:///rasp.db', echo=True)
-# postgres_db = "postgres://auovkhqgqesnwt:" + postgresql_db_password + "@ec2-54-246-85-151.eu-west-1.compute.amazonaws.com:5432/dce3m16p78rm71"
 postgres_db = postgresql_db_url
-# engine = create_engine('sqlite:///databases/rasp.db', echo=True)
 engine = create_engine(postgres_db, echo=False)
-# engine = create_engine('sqlite:///databases/rasp.db', echo=False)
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
 
-def get_lessons(class_name):
-    rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name)
-    lessons_string = ""
-    print(rasp_lessons)
-    for lsn in rasp_lessons:
-        print("LSN:", lsn)
-        print(lsn.week_day)
-        print(lsn.subject_name)
-        print(lsn.room_number)
-        lessons_string = lessons_string + " " + str(lsn.week_day) + " " + str(lsn.subject_name) + " " + str(lsn.room_number) + "\n"
-        print("0.0")
-    return lessons_string
+# def get_lessons(class_name):
+#     rasp_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name)
+#     lessons_string = ""
+#     print(rasp_lessons)
+#     for lsn in rasp_lessons:
+#         print("LSN:", lsn)
+#         print(lsn.week_day)
+#         print(lsn.subject_name)
+#         print(lsn.room_number)
+#         lessons_string = lessons_string + " " + str(lsn.week_day) + " " + str(lsn.subject_name) + " " + str(lsn.room_number) + "\n"
+#         print("0.0")
+#     return lessons_string
 
 
 def get_lessons_for_week_day(class_name: str, week_day: int):
@@ -71,7 +67,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
     if day_lessons_text == "":
         print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
         return "Выходной"  # EDIT THIS LINE LATER
-    day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n"
+    day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
     day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
     return day_lessons_text_result
@@ -103,7 +99,7 @@ def check_for_class(class_name) -> bool:  # проверить наличие к
 
 def get_lessons_by_day(day: str, class_name: str):
     day = day.lower()
-    print("поиск в базе расписания для", class_name, "на", day)
+    print("__rasp_base", "поиск в базе расписания для", class_name, "на", day)
     if day == "сегодня":
         return get_lessons_for_today(class_name)
     if day == "завтра":
@@ -152,7 +148,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
     if len(day_lessons_dict) == 0:
         print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
         day_lessons_dict['dayoff'] = "Выходной"
-    day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n"
+    day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n\n"
     day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
 
     start_times = list(day_lessons_dict.keys())

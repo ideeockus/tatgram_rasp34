@@ -12,10 +12,6 @@ class Stat(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     value = Column(Integer)
-    # total_users = Column(Integer)
-    # pupils = Column(Integer)
-    # teachers = Column(Integer)
-    # parents = Column(Integer)
 
 
 class StatFields(Enum):
@@ -52,31 +48,6 @@ def new_user(role: str):
         stats_db_session.add(Stat(name=role, value=0))
         roles = stats_db_session.query(Stat).filter(Stat.name == role).scalar()
     roles.value += 1
-
-    # if role == "pupil":
-    #     pupils = stats_db_session.query(Stat).filter(Stat.name == StatFields.PUPILS.value).scalar()
-    #     if pupils is None:
-    #         stats_db_session.add(Stat(name=StatFields.PUPILS.value, value=0))
-    #         pupils = stats_db_session.query(Stat).filter(Stat.name == StatFields.PUPILS.value).scalar()
-    #     pupils += 1
-    # if role == "teacher":
-    #     teachers = stats_db_session.query(Stat).filter(Stat.name == StatFields.TEACHERS.value).scalar()
-    #     if teachers is None:
-    #         stats_db_session.add(Stat(name=StatFields.TEACHERS.value, value=0))
-    #         teachers = stats_db_session.query(Stat).filter(Stat.name == StatFields.TEACHERS.value).scalar()
-    #     teachers += 1
-    # if role == "parent":
-    #     parents = stats_db_session.query(Stat).filter(Stat.name == StatFields.PARENTS.value).scalar()
-    #     if parents is None:
-    #         stats_db_session.add(Stat(name=StatFields.PARENTS.value, value=0))
-    #         parents = stats_db_session.query(Stat).filter(Stat.name == StatFields.PARENTS.value).scalar()
-    #     parents += 1
-
-    # roles = stats_db_session.query(Stat).filter(Stat.name == role).scalar()
-    # if roles is None:
-    #     stats_db_session.add(Stat(name=role, value=0))
-    #     parents = stats_db_session.query(Stat).filter(Stat.name == role).scalar()
-    # roles += 1
 
     stats_db_session.commit()
 

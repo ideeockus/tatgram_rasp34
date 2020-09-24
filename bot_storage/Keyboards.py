@@ -10,7 +10,7 @@ parent_role_button = KeyboardButton("Родитель")
 choose_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 choose_role_kb.row(pupil_role_button, teacher_role_button, parent_role_button)
 
-feedback_button = KeyboardButton("обратная связь")
+feedback_button = KeyboardButton("Обратная связь")
 
 # rasp_button = KeyboardButton("Расписание")
 rasp_today_button = KeyboardButton("На сегодня")

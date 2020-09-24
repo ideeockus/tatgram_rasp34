@@ -46,6 +46,7 @@ def del_user_role(user_id):
 
 
 def change_role(user_id, new_role):
+    print(f"Смена роли пользователя {user_id} на {new_role}")
     user_id = str(user_id)
     del_user_role(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
@@ -60,14 +61,9 @@ def get_role(user_id):
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id))
     user_roles = []
-    # print(user_records)
-    # try:
-    #     user_records[0]
-    # except ProgrammingError:
-    #     return None
 
     for user_record in user_records:
-        print(f"У пользователя {user_record.user_id} записана роль {user_record.role}")
+        # print(f"У пользователя {user_record.user_id} записана роль {user_record.role}")
         user_roles.append(user_record.role)
     if len(user_roles) == 0:
         return None
