@@ -47,12 +47,12 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         lesson_end = lsn.lesson_end_time[:-3]
         subject_name = lsn.subject_name
         room_number = lsn.room_number
-        room_number = text("кабинет ", bold(room_number)) if room_number is not None else ""
+        room_number = text("\n", "кабинет ", room_number) if room_number is not None else ""
         teacher_name = lsn.teacher_name
         teacher_name = f"\n{teacher_name}" if teacher_name is not None else ""
         # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} кабинет {room_number}{teacher_name}\n\n"
-        day_lessons_text += text(f"[[{lesson_start} - {lesson_end}]]",
-                                 subject_name, room_number, italic(teacher_name), "\n\n")
+        day_lessons_text += text(bold(f"[{lesson_start} - {lesson_end}]"),
+                                 bold(subject_name), room_number, italic(teacher_name), "\n\n")
     if day_lessons_text == "":
         print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
         day_lessons_text = "Выходной"  # EDIT THIS LINE LATER

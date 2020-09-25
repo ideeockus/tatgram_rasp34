@@ -75,12 +75,12 @@ async def teachers_rasp_2(message: types.Message, state: FSMContext):
                 teachers_choose_list.append(teacher_full_name)
                 teacher_full_name_button = InlineKeyboardButton(teacher_full_name.title(), callback_data=teacher_full_name)
                 teachers_choose_list_kb.insert(teacher_full_name_button)
-        if len(teachers_choose_list) == 1:
-            await message.answer("День недели", reply_markup=rasp_by_days_kb)
-            await state.update_data(rasp_for_teacher=teachers_choose_list[0].title())
-        elif len(teachers_choose_list) < 1:
+        # if len(teachers_choose_list) == 1:
+        #     await message.answer("День недели", reply_markup=rasp_by_days_kb)
+        #     await state.update_data(rasp_for_teacher=teachers_choose_list[0].title())
+        if len(teachers_choose_list) < 1:
             await message.reply("Такого учителя нет в БД")
-        elif len(teachers_choose_list) > 1:
+        elif len(teachers_choose_list) >= 1:
             await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
             return
     await MasterStates.waiting_for_action.set()
@@ -146,6 +146,7 @@ async def text_for_broadcast_gotten(message: types.Message):
             await bot.send_photo(user_id, photo_to_broadcast)
         except (BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError):
             print(f"Target [ID:{user_id}]: fault")
+            # print(e)
             bad_users_count += 1
     await message.reply(f"Разослано {users_count-bad_users_count} сообщений. {bad_users_count} не удалось отправить")
     await MasterStates.waiting_for_action.set()

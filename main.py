@@ -23,12 +23,12 @@ async def start(message: types.Message, state: FSMContext):
     await MainStates.wait_for_role.set()
 
 
-@dp.message_handler(lambda m: m.text.lower() in ["учитель", "ученик", "родитель", "бот111"], state=MainStates.wait_for_role)
+@dp.message_handler(lambda m: m.text.lower() in ["учитель", "ученик", "родитель", "botmaster111"], state=MainStates.wait_for_role)
 async def choose_role(message: types.Message, state: FSMContext):
     cur_state = await state.get_state()
     print(cur_state)
 
-    roles_list = {'ученик': "pupil", 'учитель': "teacher", 'родитель': "parent", 'бот111': "master"}
+    roles_list = {'ученик': "pupil", 'учитель': "teacher", 'родитель': "parent", 'botmaster111': "master"}
     role = roles_list[message.text.lower()]
     # await state.update_data(chosen_role=role)
     user_id = message.from_user.id

@@ -20,10 +20,10 @@ class PupilStates(StatesGroup):
 
 @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
 async def reg_class(message: types.Message, state: FSMContext):
-    class_name = message.text
+    class_name = message.text.replace(" ", "")
     if check_for_class(class_name):
         print("Регистрация в классе", message.text)
-        await state.update_data(class_name=message.text)
+        await state.update_data(class_name=class_name)
         await message.answer("Окей, ты зарегистрирован", reply_markup=pupil_kb)
         await message.answer("Теперь ты можешь узнать расписание")
         await PupilStates.waiting_for_action.set()

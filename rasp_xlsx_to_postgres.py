@@ -45,7 +45,7 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 rasp_session = Session()
 
-rasp_excel = load_workbook("databases/Raspisanie_1.xlsx", read_only=True)
+rasp_excel = load_workbook("databases/rasp_1_25.09.xlsx", read_only=True)
 rasp = rasp_excel.active
 
 for lsn in rasp_session.query(Lessons).all():  # очитска предыдущей таблицы
@@ -75,8 +75,13 @@ for row_num in range(3, rasp.max_row):
     rasp_session.add(lesson)
     print(class_name, week_day, lesson_start_time, subject_name, room_number, teacher_name)
 
+# db speed test
+db_commit_start_time = datetime.datetime.now()
+print("На обработку xslx файла ушло", (db_commit_start_time-script_start_time).total_seconds(), "секнуд")
+
 rasp_session.commit()
 
 # speed test
 script_end_time = datetime.datetime.now()
-print((script_end_time-script_start_time).total_seconds())
+print("На запись в базу данных ушло", (script_end_time-db_commit_start_time).total_seconds(), "секунд")
+print("Всего затрачено", (script_end_time-script_start_time).total_seconds(), "секунд")

@@ -36,8 +36,9 @@ async def feedback_text_gotten(message: types.Message, state: FSMContext):
                         str(feedback_text))
     try:
         await bot.send_message(feedback_tg_id, feedback_msg, parse_mode=ParseMode.MARKDOWN)
-    except (BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError):
+    except (BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError) as e:
         print("Отправка фидбека не удалась")
+        print(e)
         await message.answer("К сожалению отправка фидбека не удалась")
     else:
         await message.answer("Сообщение отправлено")
