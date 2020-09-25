@@ -77,7 +77,8 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
     await TeacherStates.waiting_for_action.set()
 
 
-@dp.callback_query_handler(state=TeacherStates.waiting_for_teacher_name)
+@dp.callback_query_handler(lambda cq: cq.data not in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+                           state=TeacherStates.waiting_for_teacher_name)
 async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: FSMContext):
     callback_data = callback_query.data
     teacher_name = callback_data
@@ -164,9 +165,8 @@ async def document_getting(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=TeacherStates.waiting_for_action)
 async def rasp_yesterday(message: types.Message, state: FSMContext):
-    await message.reply("Что вы хотите сообщить?")
-    await feedback.make_feedback(TeacherStates.waiting_for_action)
-
+    await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_feedback_kb)
+    await feedback.make_feedback(TeacherStates.waiting_for_action, end_keyboard=teacher_kb)
 
 
 

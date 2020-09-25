@@ -1,2 +1,18 @@
 INFO:root:BOT START
 DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:aiogram:Make request: "getMe" with data: "{}" and files "None"
+DEBUG:aiogram:Response for getMe: [200] "'{"ok":true,"result":{"id":971771330,"is_bot":true,"first_name":"\\u0440\\u0430\\u0441\\u043f\\u0438\\u0441\\u0430\\u043d\\u0438\\u043534\\u0442\\u0435\\u0441\\u0442\\u0431\\u043e\\u0442","username":"rasp34testbot","can_join_groups":true,"can_read_all_group_messages":false,"supports_inline_queries":false}}'"
+INFO:aiogram:Bot: расписание34тестбот [@rasp34testbot]
+DEBUG:aiogram:Make request: "getWebhookInfo" with data: "{}" and files "None"
+DEBUG:aiogram:Response for getWebhookInfo: [200] "'{"ok":true,"result":{"url":"","has_custom_certificate":false,"pending_update_count":0}}'"
+DEBUG:aiogram:Make request: "getUpdates" with data: "{'offset': -1, 'timeout': 1}" and files "None"
+WARNING:aiogram:Goodbye!
+INFO:root:BOT START
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:aiogram:Make request: "getMe" with data: "{}" and files "None"
+DEBUG:aiogram:Response for getMe: [200] "'{"ok":true,"result":{"id":971771330,"is_bot":true,"first_name":"\\u0440\\u0430\\u0441\\u043f\\u0438\\u0441\\u0430\\u043d\\u0438\\u043534\\u0442\\u0435\\u0441\\u0442\\u0431\\u043e\\u0442","username":"rasp34testbot","can_join_groups":true,"can_read_all_group_messages":false,"supports_inline_queries":false}}'"
+INFO:aiogram:Bot: расписание34тестбот [@rasp34testbot]
+DEBUG:aiogram:Make request: "getWebhookInfo" with data: "{}" and files "None"
+DEBUG:aiogram:Response for getWebhookInfo: [200] "'{"ok":true,"result":{"url":"","has_custom_certificate":false,"pending_update_count":0}}'"
+DEBUG:aiogram:Make request: "getUpdates" with data: "{'offset': -1, 'timeout': 1}" and files "None"
+WARNING:aiogram:Goodbye!

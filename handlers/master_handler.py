@@ -51,7 +51,7 @@ async def teachers_rasp(message: types.Message):
 @dp.message_handler(state=MasterStates.waiting_for_class_name)
 async def pupil_rasp_2(message: types.Message, state: FSMContext):
     # classes_set = rasp_base.get_all_classes()
-    class_name = message.text.lower()
+    class_name = message.text.lower().replace(" ", "")
     if rasp_base.check_for_class(class_name):
         await state.update_data(rasp_for_class=class_name)
         await message.answer("Выберите день", reply_markup=rasp_by_days_kb)

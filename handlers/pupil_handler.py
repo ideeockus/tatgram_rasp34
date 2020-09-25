@@ -21,8 +21,10 @@ class PupilStates(StatesGroup):
 @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
 async def reg_class(message: types.Message, state: FSMContext):
     class_name = message.text.replace(" ", "")
+    user_id = message.from_user.id
+    roles_base.reg_class(user_id, class_name)
     if check_for_class(class_name):
-        print("Регистрация в классе", message.text)
+        # print("Регистрация в классе", class_name)
         await state.update_data(class_name=class_name)
         await message.answer("Окей, ты зарегистрирован", reply_markup=pupil_kb)
         await message.answer("Теперь ты можешь узнать расписание")
@@ -53,7 +55,7 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
 
     print("класс не указан", user_data)
     await message.answer("Укажите свой класс, пожалуйста")
-    await PupilStates.waiting_for_class_name.set()
+    await PupilStates.waiting_for_registration.set()
 
 
 @dp.message_handler(lambda m: m.text == "По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
@@ -95,7 +97,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
 
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
-async def rasp_for_other_class(message: types.Message, state: FSMContext):
+async def req_rasp_for_other_class(message: types.Message, state: FSMContext):
     # print("запрос расписания для другого класса")
     await message.answer("Для какого класса вы хотите узнать расписание?")
     await PupilStates.waiting_for_other_class_name.set()
@@ -104,7 +106,7 @@ async def rasp_for_other_class(message: types.Message, state: FSMContext):
 @dp.message_handler(state=PupilStates.waiting_for_other_class_name, content_types=types.ContentType.TEXT)
 async def rasp_for_other_class(message: types.Message, state: FSMContext):
     # print("Запрос для другого класса: ")
-    other_class_name = message.text
+    other_class_name = message.text.replace(" ", "")
     if not check_for_class(other_class_name):
         await message.reply("Не могу найти такого класса")
         await PupilStates.waiting_for_action.set()
@@ -121,9 +123,9 @@ async def rasp_yesterday(message: types.Message):
 
 
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=PupilStates.waiting_for_action)
-async def rasp_yesterday(message: types.Message):
-    await message.reply("Что вы хотите сообщить?")
-    await feedback.make_feedback(PupilStates.waiting_for_action)
+async def pupil_feedback(message: types.Message):
+    await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_feedback_kb)
+    await feedback.make_feedback(PupilStates.waiting_for_action, end_keyboard=pupil_kb)
 
 
 

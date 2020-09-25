@@ -9,9 +9,12 @@ Base = declarative_base()
 
 class RoleRecord(Base):
     __tablename__ = "roles_db"
-    id = Column(Integer)
+    # id = Column(Integer)
     user_id = Column(String, primary_key=True)
     role = Column(String)
+    identifier = Column(String)  # название класса или имя учителя
+    username = Column(String)
+    user_fullname = Column(String)
 
 
 postgres_db = postgresql_db_url
@@ -21,25 +24,36 @@ Session = sessionmaker(bind=engine)
 roles_db_session = Session()
 
 
-def reg_new(user_id, role):
+def reg_new(user_id, role, username="", user_fullname=""):
     user_id = str(user_id)
-    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id))
-    user_roles = []
-    for user_record in user_records:
-        user_roles.append(user_record.role)
-    if len(user_roles) > 0:
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id)).scalar()
+    # user_roles = []
+    # for user_record in user_records:
+    #     user_roles.append(user_record.role)
+    if user_record is not None:
         print(f"у пользователя {user_id} уже есть роль")
         return
-    role_db_record = RoleRecord(user_id=user_id, role=role)
+    role_db_record = RoleRecord(user_id=user_id, role=role, username=username, user_fullname=user_fullname)
     roles_db_session.add(role_db_record)
     roles_db_session.commit()
 
     bot_stats.new_user(role)  # учет статистики
 
 
+def reg_class(user_id, class_name):
+    print("__user_base:", f"регистрация {user_id} в классе {class_name}")
+    user_id = str(user_id)
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_record is None:
+        print(f"Пользователь {user_id} не может быть зарегестрирова в классе, т.к. его нет в базе")
+        return
+    user_record.identifier = class_name
+    roles_db_session.commit()
+
+
 def del_user_role(user_id):
     user_id = str(user_id)
-    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id))
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
     for user_record in user_records:
         roles_db_session.delete(user_record)
     roles_db_session.commit()
@@ -48,18 +62,24 @@ def del_user_role(user_id):
 def change_role(user_id, new_role):
     print(f"Смена роли пользователя {user_id} на {new_role}")
     user_id = str(user_id)
-    del_user_role(user_id)
-    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
-    for user_record in user_records:
-        roles_db_session.delete(user_record)
-    role_db_record = RoleRecord(user_id=user_id, role=new_role)
-    roles_db_session.add(role_db_record)
+    # del_user_role(user_id)
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_record is None:
+        print("__user_base:", f"Пользователя {user_id} нет в базе")
+    bot_stats.edit_stat(get_role(user_id), -1)
+    user_record.role = new_role
+    # for user_record in user_records:
+    #     roles_db_session.delete(user_record)
+    # role_db_record = RoleRecord(user_id=user_id, role=new_role)
+    # roles_db_session.add(role_db_record)
     roles_db_session.commit()
+
+    bot_stats.edit_stat(new_role, 1)
 
 
 def get_role(user_id):
     user_id = str(user_id)
-    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id))
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
     user_roles = []
 
     for user_record in user_records:
@@ -69,6 +89,13 @@ def get_role(user_id):
         return None
     user_role = user_roles[0]
     return user_role
+
+
+def get_identifier(user_id):
+    user_id = str(user_id)
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    user_identifier = user_records.identifier
+    return user_identifier
 
 
 def get_all_users():

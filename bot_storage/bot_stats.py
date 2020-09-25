@@ -52,6 +52,16 @@ def new_user(role: str):
     stats_db_session.commit()
 
 
+def edit_stat(stat_name: str, value_delta: int):
+    # print("__bot_stats:", f"изменение параметра статистики {stat_name} на {value_delta}")
+    editable_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
+    if editable_stat is None:
+        stats_db_session.add(Stat(name=stat_name, value=0))
+        editable_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
+    editable_stat.value += value_delta
+    stats_db_session.commit()
+
+
 
 
 
