@@ -57,7 +57,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
         day_lessons_text = "Выходной"  # EDIT THIS LINE LATER
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
-    day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
+    day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
     return day_lessons_text_result
 
@@ -140,7 +140,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
         print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
         day_lessons_dict['dayoff'] = "Выходной"
     day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n\n"
-    day_lessons_text_result += "📅" + week_days_list[week_day] + "\n"
+    day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
 
     start_times = list(day_lessons_dict.keys())
     start_times.sort()

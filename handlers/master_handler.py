@@ -10,6 +10,7 @@ from bot_storage import rasp_base
 from bot_storage.Keyboards import rasp_by_days_kb, secret_role_cancel_kb, secret_role_kb
 from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ParseMode
+from actions import update_global_rasp
 
 
 class MasterStates(StatesGroup):
@@ -17,6 +18,8 @@ class MasterStates(StatesGroup):
     waiting_for_text_to_broadcast = State()
     waiting_for_class_name = State()
     waiting_for_teacher_name = State()
+    waiting_for_rasp_file = State()
+
 
 @dp.message_handler(lambda m: m.text == "Статистика", state=MasterStates.waiting_for_action)
 async def stats(message: types.Message, state: FSMContext):
@@ -32,7 +35,7 @@ async def broadcast(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda m: m.text == "Отмена", state=MasterStates.waiting_for_text_to_broadcast)
 async def broadcast(message: types.Message, state: FSMContext):
-    await message.answer("Хорошо", reply_markup=secret_role_kb)
+    await message.answer("Отменено", reply_markup=secret_role_kb)
     await MasterStates.waiting_for_action.set()
 
 
@@ -183,7 +186,14 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
         await state.update_data(rasp_for_teacher=None)
         await state.update_data(rasp_for_class=None)
     # else:
-    #     await bot.send_message(callback_query.from_user.id, f"Какая-то ошибка произошла\n{teacher_name}\n{class_name}")
+    # await bot.send_message(callback_query.from_user.id, f"Какая-то ошибка произошла\n{teacher_name}\n{class_name}")
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
+
+
+@dp.message_handler(lambda m: m.text == "Загрузить расписание", state=MasterStates.waiting_for_action)
+async def stats(message: types.Message, state: FSMContext):
+    await message.answer("Пришлите мне xlsx файл с расписанием", reply_markup=update_global_rasp.cancel_rasp_update_kb)
+    await update_global_rasp.make_global_rasp_update(MasterStates.waiting_for_action, secret_role_kb)
+
 
 

@@ -59,10 +59,12 @@ stats_button = KeyboardButton("Статистика")
 broadcast_button = KeyboardButton("Рассылка")
 pupils_rasp_button = KeyboardButton("Расписание школьников")
 teachers_rasp_button = KeyboardButton("Расписание учителей")
+update_rasp_button = KeyboardButton("Загрузить расписание")
 
 secret_role_kb.add(stats_button)
 secret_role_kb.add(broadcast_button)
 secret_role_kb.add(pupils_rasp_button, teacher_rasp_button)
+secret_role_kb.add(update_rasp_button)
 # secret_role_kb.add(teachers_rasp_button)
 
 secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
