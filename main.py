@@ -1,9 +1,9 @@
 from aiogram import executor, types
-from bot_storage.Keyboards import teacher_kb, choose_role_kb
+from bot_storage.Keyboards import teacher_kb, choose_role_kb, headman_kb
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from handlers import teacher_handler, pupil_handler, master_handler
+from handlers import teacher_handler, pupil_handler, master_handler, headman_handler
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
 from bot_storage.configuration import botmaster_role_phrase
@@ -24,12 +24,13 @@ async def start(message: types.Message, state: FSMContext):
     await MainStates.wait_for_role.set()
 
 
-@dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", botmaster_role_phrase], state=MainStates.wait_for_role)
+@dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase], state=MainStates.wait_for_role)
 async def choose_role(message: types.Message, state: FSMContext):
     cur_state = await state.get_state()
     print(cur_state)
 
-    roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent", botmaster_role_phrase: "master"}
+    roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent",
+                  botmaster_role_phrase: "master", "Староста": "headman"}
     role = roles_list[message.text]
     # await state.update_data(chosen_role=role)
     user_id = message.from_user.id
@@ -49,6 +50,14 @@ async def choose_role(message: types.Message, state: FSMContext):
     elif role == "master":
         await master_handler.MasterStates.waiting_for_action.set()
         await message.answer("Master role activated", reply_markup=secret_role_kb)
+    elif role == "headman":
+        await headman_handler.HeadmanStates.waiting_for_registration.set()
+        await message.answer("Введите свой класс", reply_markup=ReplyKeyboardRemove())
+
+
+@dp.message_handler(state=MainStates.wait_for_role)
+async def choose_role(message: types.Message, state: FSMContext):
+    await message.answer("Выберите роль с помощью кнопок")
 
 
 @dp.message_handler()
@@ -92,6 +101,23 @@ async def unreg_msg(message: types.Message, state: FSMContext):
         elif user_role == "master":
             await master_handler.MasterStates.waiting_for_action.set()
             await message.answer("Master role activated", reply_markup=secret_role_kb)
+
+        elif user_role == "headman":
+            user_class_name = roles_base.get_identifier(user_id)
+            await state.update_data(class_name=user_class_name)
+            await headman_handler.HeadmanStates.waiting_for_action.set()
+            if message.text in ["На сегодня", "На завтра"]:
+                await headman_handler.rasp_today_yesterday(message, state)
+            elif message.text == "По дням":
+                await headman_handler.rasp_by_day(message, state)
+            elif message.text == "Обратная связь":
+                await headman_handler.pupil_feedback(message)
+            elif message.text == "Для другого класса":
+                await headman_handler.req_rasp_for_other_class(message, state)
+            elif message.text == "Расписание учителей":
+                await headman_handler.teacher_rasp(message, state)
+            else:
+                await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
 
 
 @dp.message_handler(state="*")

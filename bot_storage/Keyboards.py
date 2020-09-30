@@ -13,6 +13,7 @@ choose_role_kb.row(pupil_role_button, teacher_role_button, parent_role_button)
 feedback_button = KeyboardButton("Обратная связь")
 
 # rasp_button = KeyboardButton("Расписание")
+# Клавиатура учеников
 rasp_today_button = KeyboardButton("На сегодня")
 rasp_yesterday_button = KeyboardButton("На завтра")
 rasp_by_day_button = KeyboardButton("По дням")
@@ -24,6 +25,7 @@ pupil_kb.add(rasp_by_day_button)
 pupil_kb.add(other_class_rasp_button)
 pupil_kb.add(feedback_button)
 
+# Инлайн клавиатура
 week_start_timedelta = timedelta(days=datetime.now().weekday())
 week_start_date = datetime.now() - week_start_timedelta
 week_days_text = []
@@ -41,6 +43,7 @@ sat_button = InlineKeyboardButton("Суббота "+week_days_text[5], callback_
 rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
 
 
+# Клавиатура учителей
 teacher_rasp_button = KeyboardButton("Расписание учителей")
 teacher_photo_button = KeyboardButton("Отправить фото")
 teacher_kb = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -52,15 +55,21 @@ teacher_photo_end_button = KeyboardButton("Назад (отправка фото
 teacher_photo_sending_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 teacher_photo_sending_kb.row(teacher_photo_end_button)
 
+# Клавиатура дял старост
+headman_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+headman_kb.row(rasp_today_button, rasp_yesterday_button)
+headman_kb.add(rasp_by_day_button)
+headman_kb.add(other_class_rasp_button)
+headman_kb.add(teacher_rasp_button)
+headman_kb.add(feedback_button)
+
 
 secret_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-
 stats_button = KeyboardButton("Статистика")
 broadcast_button = KeyboardButton("Рассылка")
 pupils_rasp_button = KeyboardButton("Расписание школьников")
 teachers_rasp_button = KeyboardButton("Расписание учителей")
 update_rasp_button = KeyboardButton("Загрузить расписание")
-
 secret_role_kb.add(stats_button)
 secret_role_kb.add(broadcast_button)
 secret_role_kb.add(pupils_rasp_button, teacher_rasp_button)
