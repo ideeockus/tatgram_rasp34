@@ -3,8 +3,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
 from aiogram.types import ParseMode
-from bot_storage.Keyboards import teacher_kb, rasp_by_days_kb, cancel_kb
-from bot_storage.Keyboards import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from bot_storage.Keyboards import rasp_by_days_kb
+from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
 
 
@@ -36,7 +36,6 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
     teacher_name = message.text.lower()
     teachers_set = set(map(str.lower, get_all_teachers()))
     if teacher_name in teachers_set:
-        # user_data = await state.get_data()
         await state.update_data(teacher_name=teacher_name.title())
         await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
         await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
@@ -60,16 +59,14 @@ async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: F
     await bot.answer_callback_query(callback_query.id)
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
     teacher_name = callback_query.data
-    # await state.update_data(teacher_name=teacher_name)
     print("выбор", teacher_name, "с инлайн клавиатуры")
     await state.update_data(teacher_name=teacher_name.title())
     await bot.send_message(callback_query.from_user.id, "Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
     await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
 
 
-
 @dp.callback_query_handler(lambda cq: cq.data in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
-                           state=TeacherRaspReqStates.waiting_for_inline_week_day_chose)  # state=TeacherRaspReqStates.waiting_for_action
+                           state=TeacherRaspReqStates.waiting_for_inline_week_day_chose)
 async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state: FSMContext):
     print(f"callback_data: {callback_query.data}")
     print(f"state_data: {await state.get_data()}")
@@ -83,9 +80,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     user_data = await state.get_data()
     teacher_name = user_data['teacher_name']
     print("запрос расписания для", teacher_name, "на", callback_data)
-    # lessons = "Нет уроков"
     if teacher_name is not None:
-        # print(callback_data)
         lessons = get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
         await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN)
         await TeacherRaspReqStates.waiting_for_action.set()

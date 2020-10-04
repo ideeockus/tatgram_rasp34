@@ -80,9 +80,7 @@ secret_role_kb.add(update_rasp_button)
 
 
 # Клавиатура отмены действия
-# secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_button = KeyboardButton("Отмена")
-# secret_role_cancel_kb.add(cancel_button)
 cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_kb.add(cancel_button)
 
