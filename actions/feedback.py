@@ -7,11 +7,11 @@ from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserD
 from bot_storage.roles_base import get_role
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode
-from bot_storage.Keyboards import ReplyKeyboardMarkup, KeyboardButton
+from bot_storage.Keyboards import cancel_kb
 
-cancel_feedback_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-cancel_feedback_button = KeyboardButton("Отмена")
-cancel_feedback_kb.add(cancel_feedback_button)
+# cancel_feedback_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+# cancel_feedback_button = KeyboardButton("Отмена")
+# cancel_feedback_kb.add(cancel_feedback_button)
 
 
 class FeedbackSteps(StatesGroup):
@@ -20,7 +20,7 @@ class FeedbackSteps(StatesGroup):
 
 
 class FeedbackKeyboards:
-    end_keyboard = cancel_feedback_kb
+    end_keyboard = cancel_kb
 
 
 def md_shielding(md_text: str) -> str:

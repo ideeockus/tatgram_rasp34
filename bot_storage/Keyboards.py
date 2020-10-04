@@ -4,6 +4,7 @@ from aiogram.types import ReplyKeyboardRemove, \
 from datetime import datetime, timedelta
 
 
+# Клавиатура для выбора роли
 pupil_role_button = KeyboardButton("Ученик")
 teacher_role_button = KeyboardButton("Учитель")
 parent_role_button = KeyboardButton("Родитель")
@@ -12,18 +13,18 @@ choose_role_kb.row(pupil_role_button, teacher_role_button, parent_role_button)
 
 feedback_button = KeyboardButton("Обратная связь")
 
-# rasp_button = KeyboardButton("Расписание")
+
 # Клавиатура учеников
 rasp_today_button = KeyboardButton("На сегодня")
 rasp_yesterday_button = KeyboardButton("На завтра")
 rasp_by_day_button = KeyboardButton("По дням")
 other_class_rasp_button = KeyboardButton("Для другого класса")
-# for_teacher_button = KeyboardButton("Для учителя")
 pupil_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 pupil_kb.row(rasp_today_button, rasp_yesterday_button)
 pupil_kb.add(rasp_by_day_button)
 pupil_kb.add(other_class_rasp_button)
 pupil_kb.add(feedback_button)
+
 
 # Инлайн клавиатура
 week_start_timedelta = timedelta(days=datetime.now().weekday())
@@ -52,21 +53,20 @@ teacher_kb.add(teacher_rasp_button)
 teacher_kb.row(all_teachers_rasp_button, teacher_photo_button)
 teacher_kb.add(feedback_button)
 
-
 teacher_photo_end_button = KeyboardButton("Назад (отправка фото окончена)")
 teacher_photo_sending_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 teacher_photo_sending_kb.row(teacher_photo_end_button)
+
 
 # Клавиатура дял старост
 headman_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 headman_kb.row(rasp_today_button, rasp_yesterday_button)
 headman_kb.add(rasp_by_day_button)
-# hdm_teacher_rasp_button = KeyboardButton("Распиасние учителей")
 headman_kb.add(other_class_rasp_button, all_teachers_rasp_button)
-# headman_kb.add()
 headman_kb.add(feedback_button)
 
 
+# Клавиатура админа
 secret_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 stats_button = KeyboardButton("Статистика")
 broadcast_button = KeyboardButton("Рассылка")
@@ -75,13 +75,14 @@ teachers_rasp_button = KeyboardButton("Расписание учителей")
 update_rasp_button = KeyboardButton("Загрузить расписание")
 secret_role_kb.add(stats_button)
 secret_role_kb.add(broadcast_button)
-secret_role_kb.add(pupils_rasp_button, teacher_rasp_button)
+secret_role_kb.add(pupils_rasp_button, teachers_rasp_button)
 secret_role_kb.add(update_rasp_button)
-# secret_role_kb.add(teachers_rasp_button)
 
-secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+
+# Клавиатура отмены действия
+# secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_button = KeyboardButton("Отмена")
-secret_role_cancel_kb.add(cancel_button)
+# secret_role_cancel_kb.add(cancel_button)
 cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_kb.add(cancel_button)
 
