@@ -44,10 +44,12 @@ rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, 
 
 
 # Клавиатура учителей
-teacher_rasp_button = KeyboardButton("Расписание учителей")
+teacher_rasp_button = KeyboardButton("Мое расписание")
+all_teachers_rasp_button = KeyboardButton("Расписание учителей")
 teacher_photo_button = KeyboardButton("Отправить фото")
 teacher_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-teacher_kb.row(teacher_rasp_button, teacher_photo_button)
+teacher_kb.add(teacher_rasp_button)
+teacher_kb.row(all_teachers_rasp_button, teacher_photo_button)
 teacher_kb.add(feedback_button)
 
 
@@ -59,8 +61,8 @@ teacher_photo_sending_kb.row(teacher_photo_end_button)
 headman_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 headman_kb.row(rasp_today_button, rasp_yesterday_button)
 headman_kb.add(rasp_by_day_button)
-headman_kb.add(other_class_rasp_button)
-headman_kb.add(teacher_rasp_button)
+headman_kb.add(other_class_rasp_button, teacher_rasp_button)
+# headman_kb.add()
 headman_kb.add(feedback_button)
 
 
@@ -79,6 +81,8 @@ secret_role_kb.add(update_rasp_button)
 secret_role_cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_button = KeyboardButton("Отмена")
 secret_role_cancel_kb.add(cancel_button)
+cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+cancel_kb.add(cancel_button)
 
 
 

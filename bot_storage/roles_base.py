@@ -51,6 +51,17 @@ def reg_class(user_id, class_name):
     roles_db_session.commit()
 
 
+def set_identifier(user_id, identifier):
+    print(f"{user_id} теперь зарегестрирован как {identifier}")
+    user_id = str(user_id)
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_record is None:
+        print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
+        return
+    user_record.identifier = identifier
+    roles_db_session.commit()
+
+
 def del_user_role(user_id):
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)

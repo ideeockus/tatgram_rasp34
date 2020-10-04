@@ -2,8 +2,9 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterday, check_for_class, get_lessons_by_day
+from bot_storage.rasp_base import get_all_classes
 from bot import dp, bot
-from bot_storage.Keyboards import pupil_kb, rasp_by_days_kb, ReplyKeyboardRemove
+from bot_storage.Keyboards import pupil_kb, rasp_by_days_kb, InlineKeyboardButton, InlineKeyboardMarkup
 from bot_storage import roles_base
 from aiogram.types import ParseMode
 
@@ -22,8 +23,8 @@ class PupilStates(StatesGroup):
 async def reg_class(message: types.Message, state: FSMContext):
     class_name = message.text.replace(" ", "")
     user_id = message.from_user.id
-    roles_base.reg_class(user_id, class_name)
     if check_for_class(class_name):
+        roles_base.reg_class(user_id, class_name)
         # print("Регистрация в классе", class_name)
         await state.update_data(class_name=class_name)
         await message.answer("Окей, ты зарегистрирован", reply_markup=pupil_kb)
@@ -31,6 +32,41 @@ async def reg_class(message: types.Message, state: FSMContext):
         await PupilStates.waiting_for_action.set()
     else:
         await message.answer("Не могу найти такого класса, введите еще раз")
+        # classes_set = get_all_classes()
+        # classes_choose_list = []
+        # classes_choose_list_kb = InlineKeyboardMarkup(row_width=2)
+        # for class_name in classes_set:
+        #     if class_name.find(class_name) >= 0:
+        #         classes_choose_list.append(class_name)
+        #         class_name_button = InlineKeyboardButton(class_name.upper(), callback_data=class_name)
+        #         classes_choose_list_kb.insert(class_name_button)
+        # if len(classes_choose_list) < 1:
+        #     await message.reply("Не могу найти такого класса, введите еще раз")
+        # elif len(classes_choose_list) > 1:
+        #     await message.answer("Выберите из списка", reply_markup=classes_choose_list_kb)
+        # elif len(classes_choose_list) == 1:
+        #     roles_base.set_identifier(user_id, class_name.title())
+        #     await state.update_data(class_name=class_name)
+        #     await bot.send_message(user_id, "Отлично", reply_markup=pupil_kb)
+        #     await bot.send_message(user_id, "Теперь вы можете узнать расписание")
+        #     await PupilStates.waiting_for_action.set()
+
+
+# @dp.callback_query_handler(state=PupilStates.waiting_for_registration)
+# async def reg_teacher_full_name_inline(callback_query: types.CallbackQuery, state: FSMContext):
+#     await bot.answer_callback_query(callback_query.id)
+#     await PupilStates.waiting_for_action.set()
+#     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
+#
+#     class_name = callback_query.data.replace(" ", "")
+#     user_id = callback_query.from_user.id
+#     classes_set = set(map(str.lower, get_all_classes()))
+#     if class_name.lower() in classes_set:
+#         roles_base.set_identifier(user_id, class_name.title())
+#         await state.update_data(class_name=class_name)
+#         await bot.send_message(user_id, "Отлично", reply_markup=pupil_kb)
+#         await bot.send_message(user_id, "Теперь вы можете узнать расписание")
+#         await PupilStates.waiting_for_action.set()
 
 
 @dp.message_handler(lambda m: m.text in ["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)

@@ -9,7 +9,9 @@ from bot_storage.Keyboards import teacher_photo_sending_kb, teacher_kb, rasp_by_
 import io
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
 from actions import feedback
+from actions import teachers_rasp
 from aiogram.types import ParseMode
+from bot_storage import roles_base
 
 
 class TeacherStates(StatesGroup):
@@ -21,23 +23,92 @@ class TeacherStates(StatesGroup):
     waiting_for_teacher_name = State()  # ждет имя учителя
 
 
-@dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
+@dp.message_handler(state=TeacherStates.waiting_for_identifier, content_types=types.ContentType.TEXT)
+async def reg_teacher(message: types.Message, state: FSMContext):
+    # teacher_name = message.text.replace(" ", "")
+    teacher_name = message.text.lower()
+    user_id = message.from_user.id
+    teachers_set = set(map(str.lower, get_all_teachers()))
+    if teacher_name.lower() in teachers_set:
+        roles_base.set_identifier(user_id, teacher_name.title())
+        await state.update_data(teacher_name=teacher_name)
+        await message.answer("Отлично", reply_markup=teacher_kb)
+        await message.answer("Теперь вы можете узнать расписание")
+        await TeacherStates.waiting_for_action.set()
+    else:
+        teachers_choose_list = []
+        teachers_choose_list_kb = InlineKeyboardMarkup(row_width=2)
+        for teacher_full_name in teachers_set:
+            if teacher_full_name.find(teacher_name) >= 0:
+                teachers_choose_list.append(teacher_full_name)
+                teacher_full_name_button = InlineKeyboardButton(teacher_full_name.title(),
+                                                                callback_data=teacher_full_name)
+                teachers_choose_list_kb.insert(teacher_full_name_button)
+        if len(teachers_choose_list) < 1:
+            await message.reply("Не могу найти такого учителя в базе, введите еще раз")
+        elif len(teachers_choose_list) >= 1:
+            await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
+            return
+        # await message.answer("Не могу найти такого учителя в базе, введите еще раз")
+
+
+@dp.callback_query_handler(state=TeacherStates.waiting_for_identifier)
+async def reg_teacher_full_name_inline(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    await TeacherStates.waiting_for_action.set()
+    await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
+    # teacher_name = callback_query.data.replace(" ", "")
+    teacher_name = callback_query.data
+    user_id = callback_query.from_user.id
+    teachers_set = set(map(str.lower, get_all_teachers()))
+    if teacher_name.lower() in teachers_set:
+        roles_base.set_identifier(user_id, teacher_name.title())
+        await state.update_data(teacher_name=teacher_name)
+        await bot.send_message(user_id, "Отлично", reply_markup=teacher_kb)
+        await bot.send_message(user_id, "Теперь вы можете узнать расписание")
+        await TeacherStates.waiting_for_action.set()
+
+
+@dp.message_handler(lambda m: m.text == "Мое расписание", state=TeacherStates.waiting_for_action)
 async def rasp(message: types.Message, state: FSMContext):
-    print("Запрос расписания учителей")
     user_data = await state.get_data()
     if 'teacher_name' in user_data:
-        last_teacher_kb = InlineKeyboardMarkup(row_width=2)
-        last_teacher_button = InlineKeyboardButton(user_data['teacher_name'].title(), callback_data=user_data['teacher_name'])
-        new_teacher_button = InlineKeyboardButton("Для другого учителя", callback_data="other_teacher")
-        last_teacher_kb.add(last_teacher_button, new_teacher_button)
-        await message.answer("Для кого хотите узнать расписание?", reply_markup=last_teacher_kb)
-        await TeacherStates.waiting_for_teacher_name.set()
-        return
+        print(f"Запрос расписания для учителя {user_data['teacher_name']}")
+        teachers_rasp.TeacherRaspReqStates.waiting_for_action = TeacherStates.waiting_for_action
+        await teachers_rasp.make_teacher_rasp_request(message, teacher_name=user_data['teacher_name'])
+    else:
+        await message.answer("Введите ваше имя чтобы я его запомнил")
+        await TeacherStates.waiting_for_identifier.set()
+
+
+@dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
+async def other_teachers_rasp(message: types.Message):
+    print("Запрос расписания учителей")
+    teachers_rasp.TeacherRaspReqStates.waiting_for_action = TeacherStates.waiting_for_action
+    await teachers_rasp.make_teacher_rasp_request(message)
 
     # await message.reply("Подождите...")
     # teachers_set = get_all_teachers()
-    await message.reply("Введите имя, пожалуйста")
-    await TeacherStates.waiting_for_teacher_name.set()
+    # await message.reply("Введите имя, пожалуйста")
+    # await TeacherStates.waiting_for_teacher_name.set()
+
+# @dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
+# async def rasp(message: types.Message, state: FSMContext):
+#     print("Запрос расписания учителей")
+#     user_data = await state.get_data()
+#     if 'teacher_name' in user_data:
+#         last_teacher_kb = InlineKeyboardMarkup(row_width=2)
+#         last_teacher_button = InlineKeyboardButton(user_data['teacher_name'].title(), callback_data=user_data['teacher_name'])
+#         new_teacher_button = InlineKeyboardButton("Для другого учителя", callback_data="other_teacher")
+#         last_teacher_kb.add(last_teacher_button, new_teacher_button)
+#         await message.answer("Для кого хотите узнать расписание?", reply_markup=last_teacher_kb)
+#         await TeacherStates.waiting_for_teacher_name.set()
+#         return
+#
+#     # await message.reply("Подождите...")
+#     # teachers_set = get_all_teachers()
+#     await message.reply("Введите имя, пожалуйста")
+#     await TeacherStates.waiting_for_teacher_name.set()
 
 
 @dp.callback_query_handler(lambda cq: cq.data == "other_teacher", state=TeacherStates.waiting_for_teacher_name)
@@ -56,7 +127,7 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
     # print(teachers_set)
     if teacher_name in teachers_set:
         await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
-        await state.update_data(rasp_for_teacher=teacher_name.title())
+        await state.update_data(teacher_name=teacher_name.title())
     else:
         teachers_choose_list = []
         teachers_choose_list_kb = InlineKeyboardMarkup(row_width=2)
@@ -88,7 +159,7 @@ async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: F
     print("выбор", teacher_name, "с инлайн клавиатуры")
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
-    await state.update_data(rasp_for_teacher=teacher_name.title())
+    await state.update_data(teacher_name=teacher_name.title())
     await TeacherStates.waiting_for_action.set()
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
@@ -101,7 +172,7 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
                           'thursday': 3, 'friday': 4, 'saturday': 5, 'sunday': 6}
     callback_data = callback_query.data
     user_data = await state.get_data()
-    teacher_name = user_data['rasp_for_teacher']
+    teacher_name = user_data['teacher_name']
     print("запрос расписания для", teacher_name, "на", callback_data)
     lessons = "Нет уроков"
     if teacher_name is not None:

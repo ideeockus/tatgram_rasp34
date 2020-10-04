@@ -90,10 +90,15 @@ async def unreg_msg(message: types.Message, state: FSMContext):
             # await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
             # await pupil_handler.PupilStates.waiting_for_registration.set()
         elif user_role == "teacher":
+            user_teacher_name = roles_base.get_identifier(user_id)
+            await state.update_data(teacher_name=user_teacher_name.title())
+            # await state.update_data(rasp_for_teacher=user_teacher_name.title())
             await teacher_handler.TeacherStates.waiting_for_action.set()
             # await message.reply("", reply_markup=teacher_kb)
-            if message.text == "Расписание учителей":
+            if message.text == "Мое расписание":
                 await teacher_handler.rasp(message, state)
+            elif message.text == "Расписание учителей":
+                await teacher_handler.other_teachers_rasp(message)
             elif message.text == "Отправить фото":
                 await teacher_handler.wanna_send_photo(message)
             else:
