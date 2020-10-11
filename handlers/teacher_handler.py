@@ -28,7 +28,7 @@ async def reg_teacher(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     teachers_set = set(map(str.lower, get_all_teachers()))
     if teacher_name.lower() in teachers_set:
-        roles_base.set_identifier(user_id, teacher_name.title())
+        roles_base.set_teacher_name(user_id, teacher_name.title())
         await message.answer("Отлично", reply_markup=teacher_kb)
         await message.answer("Теперь вы можете узнать расписание")
         await TeacherStates.waiting_for_action.set()
@@ -57,7 +57,7 @@ async def reg_teacher_full_name_inline(callback_query: types.CallbackQuery):
     user_id = callback_query.from_user.id
     teachers_set = set(map(str.lower, get_all_teachers()))
     if teacher_name.lower() in teachers_set:
-        roles_base.set_identifier(user_id, teacher_name.title())
+        roles_base.set_teacher_name(user_id, teacher_name.title())
         await bot.send_message(user_id, "Отлично", reply_markup=teacher_kb)
         await bot.send_message(user_id, "Теперь вы можете узнать расписание")
         await TeacherStates.waiting_for_action.set()
@@ -66,19 +66,19 @@ async def reg_teacher_full_name_inline(callback_query: types.CallbackQuery):
 @dp.message_handler(lambda m: m.text == "Мое расписание", state=TeacherStates.waiting_for_action)
 async def rasp(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    teacher_name = roles_base.get_identifier(user_id)
+    teacher_name = roles_base.get_teacher_name(user_id)
     if teacher_name is None:
         await message.answer("Упс, я забыл кто вы")
         await message.answer("Введите свое имя")
         await TeacherStates.waiting_for_identifier.set()
     await state.update_data(teacher_name=teacher_name.title())
-    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_name)
+    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb, teacher_name)
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
 async def other_teachers_rasp(message: types.Message):
     print("Запрос расписания учителей")
-    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action)
+    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb)
 
 
 @dp.message_handler(lambda m: m.text == "Отправить фото", state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)

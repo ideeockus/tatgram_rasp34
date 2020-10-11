@@ -12,7 +12,9 @@ class RoleRecord(Base):
     # id = Column(Integer)
     user_id = Column(String, primary_key=True)
     role = Column(String)
-    identifier = Column(String)  # название класса или имя учителя
+    identifier = Column(String)  # идентификатор
+    class_name = Column(String)  # имя класса
+    teacher_name = Column(String)  # имя учителя
     username = Column(String)
     user_fullname = Column(String)
 
@@ -40,15 +42,15 @@ def reg_new(user_id, role, username="", user_fullname=""):
     bot_stats.new_user(role)  # учет статистики
 
 
-def reg_class(user_id, class_name):
-    print("__user_base:", f"регистрация {user_id} в классе {class_name}")
-    user_id = str(user_id)
-    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-    if user_record is None:
-        print(f"Пользователь {user_id} не может быть зарегестрирова в классе, т.к. его нет в базе")
-        return
-    user_record.identifier = class_name
-    roles_db_session.commit()
+# def reg_class(user_id, class_name):
+#     print("__user_base:", f"регистрация {user_id} в классе {class_name}")
+#     user_id = str(user_id)
+#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+#     if user_record is None:
+#         print(f"Пользователь {user_id} не может быть зарегестрирова в классе, т.к. его нет в базе")
+#         return
+#     user_record.identifier = class_name
+#     roles_db_session.commit()
 
 
 def set_identifier(user_id, identifier):
@@ -59,6 +61,28 @@ def set_identifier(user_id, identifier):
         print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
         return
     user_record.identifier = identifier
+    roles_db_session.commit()
+
+
+def set_class_name(user_id, class_name):
+    print(f"{user_id} зарегестрирован в классе {class_name}")
+    user_id = str(user_id)
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_record is None:
+        print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
+        return
+    user_record.class_name = class_name
+    roles_db_session.commit()
+
+
+def set_teacher_name(user_id, teacher_name):
+    print(f"{user_id} зарегестрирован как {teacher_name}")
+    user_id = str(user_id)
+    user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_record is None:
+        print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
+        return
+    user_record.teacher_name = teacher_name
     roles_db_session.commit()
 
 
@@ -90,15 +114,18 @@ def change_role(user_id, new_role):
 
 def get_role(user_id):
     user_id = str(user_id)
-    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
-    user_roles = []
-
-    for user_record in user_records:
-        # print(f"У пользователя {user_record.user_id} записана роль {user_record.role}")
-        user_roles.append(user_record.role)
-    if len(user_roles) == 0:
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    if user_records is None:
         return None
-    user_role = user_roles[0]
+    user_role = user_records.role
+    # user_roles = []
+    #
+    # for user_record in user_records:
+    #     # print(f"У пользователя {user_record.user_id} записана роль {user_record.role}")
+    #     user_roles.append(user_record.role)
+    # if len(user_roles) == 0:
+    #     return None
+    # user_role = user_roles[0]
     return user_role
 
 
@@ -107,6 +134,20 @@ def get_identifier(user_id):
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     user_identifier = user_records.identifier
     return user_identifier
+
+
+def get_class_name(user_id):
+    user_id = str(user_id)
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    class_name = user_records.class_name
+    return class_name
+
+
+def get_teacher_name(user_id):
+    user_id = str(user_id)
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
+    teacher_name = user_records.teacher_name
+    return teacher_name
 
 
 def get_all_users():

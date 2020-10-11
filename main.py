@@ -40,7 +40,8 @@ async def choose_role(message: types.Message, state: FSMContext):
         roles_base.reg_new(user_id, role, username=username, user_fullname=user_fullname)
     else:
         roles_base.change_role(user_id, role)
-        roles_base.set_identifier(user_id, None)
+        roles_base.set_teacher_name(user_id, None)
+        roles_base.set_class_name(user_id, None)
 
     if role == "pupil" or role == "parent" or role == "headman":
         await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
@@ -58,8 +59,47 @@ async def choose_role(message: types.Message):
     await message.answer("Выберите роль с помощью кнопок")
 
 
+# @dp.message_handler()
+# async def unreg_msg(message: types.Message, state: FSMContext):
+#     user_id = message.from_user.id
+#     user_role = roles_base.get_role(user_id)
+#     print("Unregistered message", user_id, user_role)
+#     if user_role is None:
+#         await message.answer("Ой, я кажется забыл кто вы")
+#         await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+#         await MainStates.wait_for_role.set()
+#     else:
+#         if user_role == "pupil" or user_role == "parent" or user_role == "headman":
+#             await pupil_handler.PupilStates.waiting_for_action.set()
+#             if message.text in ["На сегодня", "На завтра"]:
+#                 await pupil_handler.rasp_today_yesterday(message)
+#             elif message.text == "По дням":
+#                 await pupil_handler.rasp_by_day(message, state)
+#             elif message.text == "Обратная связь":
+#                 await pupil_handler.pupil_feedback(message)
+#             elif message.text == "Для другого класса":
+#                 await pupil_handler.req_rasp_for_other_class(message)
+#             elif message.text == "Расписание учителей":
+#                 await pupil_handler.teacher_rasp(message)
+#             else:
+#                 await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
+#         elif user_role == "teacher":
+#             await teacher_handler.TeacherStates.waiting_for_action.set()
+#             if message.text == "Мое расписание":
+#                 await teacher_handler.rasp(message, state)
+#             elif message.text == "Расписание учителей":
+#                 await teacher_handler.other_teachers_rasp(message)
+#             elif message.text == "Отправить фото":
+#                 await teacher_handler.wanna_send_photo(message)
+#             else:
+#                 await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
+#         elif user_role == "master":
+#             await master_handler.MasterStates.waiting_for_action.set()
+#             await message.answer("Master role activated", reply_markup=secret_role_kb)
+
+
 @dp.message_handler()
-async def unreg_msg(message: types.Message, state: FSMContext):
+async def unregistered_msg(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_role = roles_base.get_role(user_id)
     print("Unregistered message", user_id, user_role)
@@ -68,33 +108,67 @@ async def unreg_msg(message: types.Message, state: FSMContext):
         await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
         await MainStates.wait_for_role.set()
     else:
-        if user_role == "pupil" or user_role == "parent" or user_role == "headman":
-            await pupil_handler.PupilStates.waiting_for_action.set()
-            if message.text in ["На сегодня", "На завтра"]:
-                await pupil_handler.rasp_today_yesterday(message)
-            elif message.text == "По дням":
-                await pupil_handler.rasp_by_day(message, state)
-            elif message.text == "Обратная связь":
-                await pupil_handler.pupil_feedback(message)
-            elif message.text == "Для другого класса":
-                await pupil_handler.req_rasp_for_other_class(message)
-            elif message.text == "Расписание учителей":
-                await pupil_handler.teacher_rasp(message)
-            else:
-                await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
-        elif user_role == "teacher":
-            await teacher_handler.TeacherStates.waiting_for_action.set()
-            if message.text == "Мое расписание":
-                await teacher_handler.rasp(message, state)
-            elif message.text == "Расписание учителей":
-                await teacher_handler.other_teachers_rasp(message)
-            elif message.text == "Отправить фото":
-                await teacher_handler.wanna_send_photo(message)
-            else:
-                await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
-        elif user_role == "master":
-            await master_handler.MasterStates.waiting_for_action.set()
-            await message.answer("Master role activated", reply_markup=secret_role_kb)
+        await define_action(message, state)
+
+
+async def define_action(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    user_role = roles_base.get_role(user_id)
+    if user_role == "pupil" or user_role == "parent" or user_role == "headman":
+        await pupil_handler.PupilStates.waiting_for_action.set()
+        if message.text in ["На сегодня", "На завтра"]:
+            await pupil_handler.rasp_today_yesterday(message)
+        elif message.text == "По дням":
+            await pupil_handler.rasp_by_day(message, state)
+        elif message.text == "Обратная связь":
+            await pupil_handler.pupil_feedback(message)
+        elif message.text == "Для другого класса":
+            await pupil_handler.req_rasp_for_other_class(message)
+        elif message.text == "Расписание учителей":
+            await pupil_handler.teacher_rasp(message)
+        else:
+            await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
+    elif user_role == "teacher":
+        await teacher_handler.TeacherStates.waiting_for_action.set()
+        if message.text == "Мое расписание":
+            await teacher_handler.rasp(message, state)
+        elif message.text == "Расписание учителей":
+            await teacher_handler.other_teachers_rasp(message)
+        elif message.text == "Отправить фото":
+            await teacher_handler.wanna_send_photo(message)
+        else:
+            await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
+    elif user_role == "master":
+        await master_handler.MasterStates.waiting_for_action.set()
+        await message.answer("Master role activated", reply_markup=secret_role_kb)
+
+
+@dp.message_handler(lambda m: m.text == "Отмена", state="*", content_types=types.ContentType.TEXT)
+async def cancel_rasp_update(message: types.Message):
+    current_kb = pupil_handler.pupil_kb
+    current_state = pupil_handler.PupilStates.waiting_for_action
+    user_id = message.from_user.id
+    user_role = roles_base.get_role(user_id)
+    if user_role is None:
+        await message.answer("Ой, я кажется забыл кто вы")
+        await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+        await MainStates.wait_for_role.set()
+
+    if user_role == "pupil" or user_role == "parent":
+        current_kb = pupil_handler.pupil_kb
+        current_state = pupil_handler.PupilStates.waiting_for_action
+    if user_role == "headman":
+        current_kb = headman_kb
+        current_state = pupil_handler.PupilStates.waiting_for_action
+    if user_role == "teacher":
+        current_kb = teacher_kb
+        current_state = teacher_handler.TeacherStates.waiting_for_action
+    if user_role == "master":
+        current_kb = secret_role_kb
+        current_state = master_handler.MasterStates.waiting_for_action
+
+    await current_state.set()
+    await message.reply("Отменено", reply_markup=current_kb)
 
 
 @dp.message_handler(state="*")

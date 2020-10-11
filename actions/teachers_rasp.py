@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
 from aiogram.types import ParseMode
-from bot_storage.Keyboards import rasp_by_days_kb
+from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
 from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
 
@@ -14,19 +14,30 @@ class TeacherRaspReqStates(StatesGroup):
     waiting_for_teacher_name = State()
 
 
+action_vars = {'keyboard': None}
+
+
 def md_shielding(md_text: str) -> str:
     return md_text.replace("*", "\\*").replace("`", "\\`").replace("_", "\\_")
 
 
-async def make_teacher_rasp_request(message: types.Message, waiting_for_action_state, teacher_name=None):
+async def make_teacher_rasp_request(message: types.Message, waiting_for_action_state, role_keyboard, teacher_name=None):
     print(f"action make_teacher_rasp_request, teacher_name = {teacher_name}")
+    action_vars['keyboard'] = role_keyboard
     TeacherRaspReqStates.waiting_for_action = waiting_for_action_state
     if teacher_name is None:
-        await message.answer("Для кого вы хотите узнать расписание?")
+        await message.answer("Для кого вы хотите узнать расписание?", reply_markup=cancel_kb)
         await TeacherRaspReqStates.waiting_for_teacher_name.set()
     else:
+        await message.answer("Запрос расписания", reply_markup=cancel_kb)
         await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
         await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
+
+
+@dp.message_handler(lambda m: m.text == "Отмена", state=TeacherRaspReqStates, content_types=types.ContentType.TEXT)
+async def cancel_rasp_update(message: types.Message):
+    await TeacherRaspReqStates.waiting_for_action.set()
+    await message.reply("Отменено", reply_markup=action_vars['keyboard'])
 
 
 @dp.message_handler(state=TeacherRaspReqStates.waiting_for_teacher_name, content_types=types.ContentType.TEXT)
@@ -82,15 +93,12 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     print("запрос расписания для", teacher_name, "на", callback_data)
     if teacher_name is not None:
         lessons = get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
-        await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN)
+        await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN, reply_markup=action_vars['keyboard'])
         await TeacherRaspReqStates.waiting_for_action.set()
     else:
         await TeacherRaspReqStates.waiting_for_teacher_name.set()
         await bot.send_message(chat_id=callback_query.message.chat.id, text="для кого вы хотите узнать распиание?")
     await TeacherRaspReqStates.waiting_for_action.set()
-
-
-
 
 
 

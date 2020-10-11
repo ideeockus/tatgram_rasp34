@@ -18,15 +18,25 @@ class PupilStates(StatesGroup):
     waiting_for_other_class_name = State()  # для другого класса
 
 
+def get_current_kb(user_id):
+    current_role = roles_base.get_role(user_id)
+    current_kb = pupil_kb
+    if current_role == "pupil":
+        current_kb = pupil_kb
+    if current_role == "headman":
+        current_kb = headman_kb
+    return current_kb
+
+
 @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
 async def reg_class(message: types.Message):
     class_name = message.text.replace(" ", "")
     user_id = message.from_user.id
     classes_set = set(map(str.lower, get_all_classes()))
     if class_name in classes_set:
-        roles_base.set_identifier(user_id, class_name)
-        user_kb = headman_kb if roles_base.get_role(user_id) == "headman" else pupil_kb
-        await message.answer("Окей, ты зарегистрирован", reply_markup=user_kb)
+        roles_base.set_class_name(user_id, class_name)
+        # user_kb = headman_kb if roles_base.get_role(user_id) == "headman" else get_current_kb(user_id)
+        await message.answer("Окей, ты зарегистрирован", reply_markup=get_current_kb(user_id))
         await message.answer("Теперь ты можешь узнать расписание")
         await PupilStates.waiting_for_action.set()
     else:
@@ -37,7 +47,7 @@ async def reg_class(message: types.Message):
 async def rasp_today_yesterday(message: types.Message):
     user_id = message.from_user.id
     role = roles_base.get_role(user_id)
-    class_name = roles_base.get_identifier(user_id)
+    class_name = roles_base.get_class_name(user_id)
     print(role, "запросил расписание", message.text)
 
     if class_name is not None:
@@ -58,30 +68,33 @@ async def rasp_today_yesterday(message: types.Message):
 @dp.message_handler(lambda m: m.text == "По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_by_day(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    class_name = roles_base.get_identifier(user_id)
+    class_name = roles_base.get_class_name(user_id)
     if class_name is None:
         await message.answer("Упс, я не помню в каком вы классе")
         await message.answer("Введите свой класс")
         await PupilStates.waiting_for_registration.set()
     await state.update_data(class_name=class_name)
-    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, class_name)
+    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id), class_name)
 
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def req_rasp_for_other_class(message: types.Message):
-    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action)
+    user_id = message.from_user.id
+    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id))
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=PupilStates.waiting_for_action)
 async def teacher_rasp(message: types.Message):
+    user_id = message.from_user.id
     print("Запрос расписания учителей учеником")
-    await teachers_rasp.make_teacher_rasp_request(message, PupilStates.waiting_for_action)
+    await teachers_rasp.make_teacher_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id))
 
 
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=PupilStates.waiting_for_action)
 async def pupil_feedback(message: types.Message):
+    user_id = message.from_user.id
     await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_kb)
-    await feedback.make_feedback(PupilStates.waiting_for_action, end_keyboard=pupil_kb)
+    await feedback.make_feedback(PupilStates.waiting_for_action, end_keyboard=get_current_kb(user_id))
 
 
 

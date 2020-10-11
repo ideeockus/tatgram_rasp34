@@ -40,12 +40,12 @@ async def broadcast(message: types.Message):
 
 @dp.message_handler(lambda m: m.text == "Расписание школьников", state=MasterStates.waiting_for_action)
 async def pupils_rasp(message: types.Message):
-    await make_pupil_rasp_request(message, MasterStates.waiting_for_action)
+    await make_pupil_rasp_request(message, MasterStates.waiting_for_action, secret_role_kb)
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=MasterStates.waiting_for_action)
 async def teachers_rasp(message: types.Message):
-    await make_teacher_rasp_request(message, MasterStates.waiting_for_action)
+    await make_teacher_rasp_request(message, MasterStates.waiting_for_action, secret_role_kb)
 
 
 @dp.message_handler(state=MasterStates.waiting_for_text_to_broadcast)
