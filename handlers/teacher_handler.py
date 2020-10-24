@@ -9,7 +9,7 @@ from bot_storage.Keyboards import teacher_photo_sending_kb, teacher_kb, InlineKe
 import io
 from bot_storage.rasp_base import get_all_teachers
 from actions import feedback
-from actions import teachers_rasp
+from actions import teachers_rasp, pupils_rasp
 from bot_storage import roles_base
 
 
@@ -132,6 +132,12 @@ async def document_getting(message: types.Message, state: FSMContext):
 async def rasp_yesterday(message: types.Message, state: FSMContext):
     await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_kb)
     await feedback.make_feedback(TeacherStates.waiting_for_action, end_keyboard=teacher_kb)
+
+
+@dp.message_handler(lambda m: m.text == "Расписание школьников", state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
+async def req_rasp_for_other_class(message: types.Message):
+    user_id = message.from_user.id
+    await pupils_rasp.make_pupil_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb)
 
 
 

@@ -48,9 +48,11 @@ rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, 
 teacher_rasp_button = KeyboardButton("Мое расписание")
 all_teachers_rasp_button = KeyboardButton("Расписание учителей")
 teacher_photo_button = KeyboardButton("Отправить фото")
+pupils_rasp_button = KeyboardButton("Расписание школьников")
 teacher_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 teacher_kb.add(teacher_rasp_button)
 teacher_kb.row(all_teachers_rasp_button, teacher_photo_button)
+teacher_kb.add(pupils_rasp_button)
 teacher_kb.add(feedback_button)
 
 teacher_photo_end_button = KeyboardButton("Назад (отправка фото окончена)")
