@@ -6,6 +6,7 @@ from aiogram.types import ParseMode
 from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
 from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
 from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day
+from utils.abg import md_format
 
 
 class TeacherRaspReqStates(StatesGroup):
@@ -93,6 +94,9 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     print("запрос расписания для", teacher_name, "на", callback_data)
     if teacher_name is not None:
         lessons = get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
+
+        # lessons = md_format(lessons)  ### исправление сломаного парсера aiogram
+
         await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN, reply_markup=action_vars['keyboard'])
         await TeacherRaspReqStates.waiting_for_action.set()
     else:

@@ -3,10 +3,10 @@ from bot_storage.Keyboards import teacher_kb, choose_role_kb, headman_kb
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from handlers import teacher_handler, pupil_handler, master_handler
+# from handlers import teacher_handler, pupil_handler, master_handler
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
-from bot_storage.configuration import botmaster_role_phrase
+from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
 
 
 class MainStates(StatesGroup):
@@ -22,6 +22,9 @@ async def start(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer("Здравствуйте. \n Выберите свою роль", reply_markup=choose_role_kb)
     await MainStates.wait_for_role.set()
+
+
+from handlers import teacher_handler, pupil_handler, master_handler
 
 
 @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
@@ -140,7 +143,20 @@ async def define_action(message: types.Message, state: FSMContext):
             await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
     elif user_role == "master":
         await master_handler.MasterStates.waiting_for_action.set()
-        await message.answer("Master role activated", reply_markup=secret_role_kb)
+        await message.answer("Здравствуйте. Уведомляю что с момента вашего последнего сообщения бот перезагружался",
+                             reply_markup=secret_role_kb)
+        if message.text == "Статистика":
+            await master_handler.stats(message)
+        elif message.text == "Рассылка":
+            await master_handler.broadcast(message)
+        elif message.text == "Расписание школьников":
+            await master_handler.pupils_rasp(message)
+        elif message.text == "Расписание учителей":
+            await master_handler.teachers_rasp(message)
+        elif message.text == "Загрузить расписание":
+            await master_handler.upload_rasp(message)
+        else:
+            await message.answer("Команда не распознана")
 
 
 @dp.message_handler(lambda m: m.text == "Отмена", state="*", content_types=types.ContentType.TEXT)
@@ -182,6 +198,21 @@ async def empty_callback_query(callback_query: types.CallbackQuery, state: FSMCo
     print(f"unrecognized callback query, callback_data: {callback_query.data}; state: {await state.get_state()}")
     await bot.answer_callback_query(callback_query.id)
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
+
+
+@dp.errors_handler()
+async def error_handler(update: types.Update, exception: Exception):
+    error_info_message = "Сообщение для администратора:\n" \
+                         "Произошла ошибка при обработке сообщения пользователя " \
+                         f"@{update.message.from_user.username}\n" \
+                         f"Сообщение: {update.message.text}\n\n" \
+                         "Подробнее смотрите в логах.\n" + str(exception)
+    if feedback_tg_id == creator_id:
+        await bot.send_message(creator_id, error_info_message)
+        return
+    await bot.send_message(feedback_tg_id, error_info_message)
+    await bot.send_message(creator_id, error_info_message)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

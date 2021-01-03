@@ -42,7 +42,7 @@ async def reg_teacher(message: types.Message, state: FSMContext):
                                                                 callback_data=teacher_full_name)
                 teachers_choose_list_kb.insert(teacher_full_name_button)
         if len(teachers_choose_list) < 1:
-            await message.reply("Не могу найти такого учителя в базе, введите еще раз")
+            await message.reply("Не могу найти такого учителя в базе. Нажмите /start чтобы выбрать роль")
         elif len(teachers_choose_list) >= 1:
             await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
             return
@@ -111,7 +111,7 @@ async def photo_getting(message: types.Message, state: FSMContext):
     loaded_file: io.BytesIO = await bot.download_file(photo_path)
     yandex_disk = yadisk.YaDisk(token=yadisk_token)
     yandex_disk.upload(loaded_file, "app:/" + "photo" + photo_name)
-    await message.reply("Готово")
+    await message.reply("Готово, фото отправлено")
 
 
 @dp.message_handler(state=TeacherStates.waiting_for_photo, content_types=types.ContentType.DOCUMENT)

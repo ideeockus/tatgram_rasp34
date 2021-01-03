@@ -5,6 +5,7 @@ from bot import dp, bot
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
 from bot_storage.rasp_base import get_all_classes, get_lessons_for_week_day
+from utils.abg import md_shielding, md_format
 
 
 class PupilsRaspReqStates(StatesGroup):
@@ -16,8 +17,8 @@ class PupilsRaspReqStates(StatesGroup):
 action_vars = {'keyboard': cancel_kb}
 
 
-def md_shielding(md_text: str) -> str:
-    return md_text.replace("*", "\\*").replace("`", "\\`").replace("_", "\\_")
+# def md_shielding(md_text: str) -> str:
+#     return md_text.replace("*", "\\*").replace("`", "\\`").replace("_", "\\_")
 
 
 async def make_pupil_rasp_request(message: types.Message, waiting_for_action_state, role_keyboard, class_name=None):
@@ -69,6 +70,10 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     print("запрос расписания для", class_name, "на", week_day)
     if class_name is not None:
         lessons = get_lessons_for_week_day(class_name, callback_data_text[week_day])
+
+        # lessons = md_format(lessons)
+
+        # print(lessons)
         await bot.send_message(callback_query.from_user.id, lessons, parse_mode=ParseMode.MARKDOWN, reply_markup=action_vars['keyboard'])
         await PupilsRaspReqStates.waiting_for_action.set()
     else:

@@ -6,6 +6,7 @@ telegram_bot_token = ""
 feedback_tg_id = ""
 postgresql_db_url = ""
 botmaster_role_phrase = ""
+creator_id = "173964659"
 
 try:
     yadisk_token = os.environ.get('YADISK_TOKEN')

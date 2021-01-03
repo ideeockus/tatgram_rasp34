@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from bot_storage.configuration import postgresql_db_url
 from aiogram.utils.markdown import bold, code, italic, text
+from utils import abg
 
 """
 A - 0 empty column
@@ -53,13 +54,16 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} кабинет {room_number}{teacher_name}\n\n"
         day_lessons_text += text(bold(f"[{lesson_start} - {lesson_end}]"),
                                  bold(subject_name), room_number, italic(teacher_name), "\n\n")
+
+        # day_lessons_text += (f"[{lesson_start} - {lesson_end}]"+subject_name)+room_number+teacher_name+"\n\n"
     if day_lessons_text == "":
-        print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
+        # print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
         day_lessons_text = "Выходной"  # EDIT THIS LINE LATER
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
-    return day_lessons_text_result
+
+    return abg.md_format(day_lessons_text_result)
 
 
 def get_lessons_for_today(class_name: str):
@@ -137,7 +141,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
         day_lessons_dict[lesson_start] = text(f"[[{lesson_start} - {lesson_end}]]",
                                               italic(subject_name), "у", bold(class_name), room_number, "\n\n")
     if len(day_lessons_dict) == 0:
-        print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
+        # print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
         day_lessons_dict['dayoff'] = "Выходной"
     day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
@@ -146,7 +150,8 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
     start_times.sort()
     for start_time in start_times:
         day_lessons_text_result += day_lessons_dict[start_time]
-    return day_lessons_text_result
+
+    return abg.md_format(day_lessons_text_result)
 
 
 
