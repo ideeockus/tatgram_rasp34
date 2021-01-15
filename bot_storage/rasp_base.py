@@ -35,10 +35,13 @@ class Lessons(Base):
 postgres_db = postgresql_db_url
 engine = create_engine(postgres_db, echo=False)
 Session = sessionmaker(bind=engine)
-rasp_session = Session()
+# rasp_session = Session()
 
 
 def get_lessons_for_week_day(class_name: str, week_day: int):
+
+    rasp_session = Session()
+
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
                                                      Lessons.week_day == week_days_list[week_day])  # выборка по бд
@@ -78,6 +81,9 @@ def get_lessons_for_yesterday(class_name: str):
 
 def get_all_classes():
     classes_set = set()
+
+    rasp_session = Session()
+
     classes = rasp_session.query(Lessons.class_name)  # выборка по бд
     for class_name in classes:
         classes_set.add(class_name.class_name)
@@ -108,6 +114,9 @@ def get_lessons_by_day(day: str, class_name: str):
 
 def get_all_teachers():
     teachers_set = set()
+
+    rasp_session = Session()
+
     teachers = rasp_session.query(Lessons.teacher_name)  # выборка по бд
     for teacher_name in teachers:
         teacher_name = teacher_name.teacher_name
@@ -124,6 +133,9 @@ def get_all_teachers():
 
 
 def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
+
+    rasp_session = Session()
+
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.teacher_name.ilike(f"%{teacher}%"),
                                                      Lessons.week_day == week_days_list[week_day])  # выборка по бд

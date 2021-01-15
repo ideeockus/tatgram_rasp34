@@ -23,10 +23,12 @@ postgres_db = postgresql_db_url
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
-roles_db_session = Session()
+# roles_db_session = Session()
 
 
 def reg_new(user_id, role, username="", user_fullname=""):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id)).scalar()
     # user_roles = []
@@ -54,6 +56,8 @@ def reg_new(user_id, role, username="", user_fullname=""):
 
 
 def set_identifier(user_id, identifier):
+    roles_db_session = Session()
+
     print(f"{user_id} теперь зарегестрирован как {identifier}")
     user_id = str(user_id)
     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
@@ -65,6 +69,8 @@ def set_identifier(user_id, identifier):
 
 
 def set_class_name(user_id, class_name):
+    roles_db_session = Session()
+
     print(f"{user_id} зарегестрирован в классе {class_name}")
     user_id = str(user_id)
     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
@@ -76,6 +82,8 @@ def set_class_name(user_id, class_name):
 
 
 def set_teacher_name(user_id, teacher_name):
+    roles_db_session = Session()
+
     print(f"{user_id} зарегестрирован как {teacher_name}")
     user_id = str(user_id)
     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
@@ -87,6 +95,8 @@ def set_teacher_name(user_id, teacher_name):
 
 
 def del_user_role(user_id):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
     for user_record in user_records:
@@ -95,6 +105,8 @@ def del_user_role(user_id):
 
 
 def change_role(user_id, new_role):
+    roles_db_session = Session()
+
     print(f"Смена роли пользователя {user_id} на {new_role}")
     user_id = str(user_id)
     # del_user_role(user_id)
@@ -113,6 +125,8 @@ def change_role(user_id, new_role):
 
 
 def get_role(user_id):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     if user_records is None:
@@ -130,6 +144,8 @@ def get_role(user_id):
 
 
 def get_identifier(user_id):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     user_identifier = user_records.identifier
@@ -137,6 +153,8 @@ def get_identifier(user_id):
 
 
 def get_class_name(user_id):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     class_name = user_records.class_name
@@ -144,6 +162,8 @@ def get_class_name(user_id):
 
 
 def get_teacher_name(user_id):
+    roles_db_session = Session()
+
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     teacher_name = user_records.teacher_name
@@ -151,6 +171,8 @@ def get_teacher_name(user_id):
 
 
 def get_all_users():
+    roles_db_session = Session()
+
     user_id_set = set()
     user_records = roles_db_session.query(RoleRecord).all()
     for user_record in user_records:

@@ -25,10 +25,11 @@ postgres_db = postgresql_db_url
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
-stats_db_session = Session()
+# stats_db_session = Session()
 
 
 def get_stats():
+    stats_db_session = Session()
     stats = stats_db_session.query(Stat).all()
     stats_text = ""
     for stat in stats:
@@ -37,6 +38,7 @@ def get_stats():
 
 
 def new_user(role: str):
+    stats_db_session = Session()
     total_users = stats_db_session.query(Stat).filter(Stat.name == "total_users").scalar()
     if total_users is None:
         stats_db_session.add(Stat(name="total_users", value=0))
@@ -53,6 +55,7 @@ def new_user(role: str):
 
 
 def edit_stat(stat_name: str, value_delta: int):
+    stats_db_session = Session()
     # print("__bot_stats:", f"изменение параметра статистики {stat_name} на {value_delta}")
     editable_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
     if editable_stat is None:

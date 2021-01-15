@@ -63,7 +63,7 @@ async def document_gotten(message: types.Message):
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
 
     try:
-        rasp_update_thread = threading.Thread(target=export_xlsx_to_db, args=(loaded_rasp_file, ))
+        rasp_update_thread = threading.Thread(target=export_xlsx_to_db, args=(loaded_rasp_file, message.from_user.id))
         rasp_update_thread.start()
         # rasp_update_thread.join()
         await message.reply("База данных обновлется, это займет какое-то время", reply_markup=RaspUpdateKeyboards.end_keyboard)
