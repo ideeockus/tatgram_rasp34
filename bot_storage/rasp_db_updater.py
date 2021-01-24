@@ -1,8 +1,8 @@
 from openpyxl import load_workbook
 from aiogram import types
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import sessionmaker
 import datetime
 from bot_storage.configuration import postgresql_db_url, telegram_bot_token, feedback_tg_id
 import requests
@@ -16,19 +16,19 @@ E -4 lesson_end_time
 F - 5 subject_name
 G - 6 room_number
 """
-Base = declarative_base()  # декларативный базовый класс
-
-
-class Lessons(Base):
-    __tablename__ = "rasp_db"
-    id = Column(Integer, primary_key=True)
-    class_name = Column(String)
-    week_day = Column(String)
-    lesson_start_time = Column(String)
-    lesson_end_time = Column(String)
-    subject_name = Column(String)
-    room_number = Column(String)
-    teacher_name = Column(String)
+# Base = declarative_base()  # декларативный базовый класс
+#
+#
+# class Lessons(Base):
+#     __tablename__ = "rasp_db"
+#     id = Column(Integer, primary_key=True)
+#     class_name = Column(String)
+#     week_day = Column(String)
+#     lesson_start_time = Column(String)
+#     lesson_end_time = Column(String)
+#     subject_name = Column(String)
+#     room_number = Column(String)
+#     teacher_name = Column(String)
 
 
 # postgres_db = ""  # <ТУТ ССЫЛКА НА БД>
@@ -44,6 +44,22 @@ class Lessons(Base):
 
 
 def export_xlsx_to_db(xlsx_file, updater_user_id):
+    from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+
+    Base = declarative_base()  # декларативный базовый класс
+
+    class Lessons(Base):
+        __tablename__ = "rasp_db"
+        id = Column(Integer, primary_key=True)
+        class_name = Column(String)
+        week_day = Column(String)
+        lesson_start_time = Column(String)
+        lesson_end_time = Column(String)
+        subject_name = Column(String)
+        room_number = Column(String)
+        teacher_name = Column(String)
 
     engine = create_engine(postgresql_db_url, echo=False)
     Base.metadata.create_all(engine)
@@ -105,16 +121,16 @@ def export_xlsx_to_db(xlsx_file, updater_user_id):
     # await send_message_func(feedback_tg_id, f"Всего затрачено {total_processing_time} секунд")
 
     rasp_updated_text = "База данных расписания обновлена!\n\n" \
-                           "На обработку xslx файла ушло "+str(xslx_processing_time)+" секнуд\n" \
+                        "На обработку xslx файла ушло "+str(xslx_processing_time)+" секнуд\n" \
                         "На запись в базу данных ушло "+str(db_processing_time)+" секунд\n" \
-                            "Всего затрачено "+str(total_processing_time)+" секунд"
+                        "Всего затрачено "+str(total_processing_time)+" секунд"
 
     requests.post(f"https://api.telegram.org/bot{telegram_bot_token}/sendMessage",
                   data={
                       "chat_id": updater_user_id,
                       "text": rasp_updated_text
                   })
-    if updater_user_id != feedback_tg_id:
+    if str(updater_user_id) != str(feedback_tg_id):
         requests.post(f"https://api.telegram.org/bot{telegram_bot_token}/sendMessage",
                       data={
                           "chat_id": feedback_tg_id,

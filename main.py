@@ -1,16 +1,17 @@
 from aiogram import executor, types
 from bot_storage.Keyboards import teacher_kb, choose_role_kb, headman_kb
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+# from aiogram.dispatcher.filters.state import State, StatesGroup
+from bot_storage.UserStates import MainStates
 from bot import dp, bot
-# from handlers import teacher_handler, pupil_handler, master_handler
+# from handlers import teacher_handler, pupil_handler, master_handler  # (it imports after start function)
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
 
 
-class MainStates(StatesGroup):
-    wait_for_role = State()
+# class MainStates(StatesGroup):
+#     wait_for_role = State()
 
 
 @dp.message_handler(commands=['start'], state="*")

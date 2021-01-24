@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+# from aiogram.dispatcher.filters.state import State, StatesGroup
+from bot_storage.UserStates import TeacherStates
 from datetime import datetime
 from bot import dp, bot
 import yadisk
@@ -11,15 +12,16 @@ from bot_storage.rasp_base import get_all_teachers
 from actions import feedback
 from actions import teachers_rasp, pupils_rasp
 from bot_storage import roles_base
+from utils.abg import abg_lost_role
 
 
-class TeacherStates(StatesGroup):
-    rasp_today = State()  # расписание на сегодня
-    rasp_yesterday = State()  # расписание на завтра
-    waiting_for_action = State()  # ожидание действий
-    waiting_for_identifier = State()  # ждет имя
-    waiting_for_photo = State()
-    waiting_for_teacher_name = State()  # ждет имя учителя
+# class TeacherStates(StatesGroup):
+#     rasp_today = State()  # расписание на сегодня
+#     rasp_yesterday = State()  # расписание на завтра
+#     waiting_for_action = State()  # ожидание действий
+#     waiting_for_identifier = State()  # ждет имя
+#     waiting_for_photo = State()
+#     waiting_for_teacher_name = State()  # ждет имя учителя
 
 
 @dp.message_handler(state=TeacherStates.waiting_for_identifier, content_types=types.ContentType.TEXT)
@@ -68,9 +70,11 @@ async def rasp(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     teacher_name = roles_base.get_teacher_name(user_id)
     if teacher_name is None:
-        await message.answer("Упс, я забыл кто вы")
-        await message.answer("Введите свое имя")
-        await TeacherStates.waiting_for_identifier.set()
+        await abg_lost_role(message, state)
+        # await message.answer("Упс, я забыл кто вы")
+        # await message.answer("Введите свое имя")
+        # await TeacherStates.waiting_for_identifier.set()
+        return
     await state.update_data(teacher_name=teacher_name.title())
     await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb, teacher_name)
 

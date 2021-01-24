@@ -28,14 +28,15 @@ Session = sessionmaker(bind=engine)
 
 def reg_new(user_id, role, username="", user_fullname=""):
     roles_db_session = Session()
+    print(f"Пользователь {user_id} будет загерестрирован как {role}")
 
     user_id = str(user_id)
     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == str(user_id)).scalar()
     # user_roles = []
     # for user_record in user_records:
     #     user_roles.append(user_record.role)
-    if user_record is not None:
-        print(f"у пользователя {user_id} уже есть роль")
+    if (user_record.role if user_record is not None else None) is not None:
+        print(f"у пользователя {user_id} уже есть роль", user_record.role)
         return
     role_db_record = RoleRecord(user_id=user_id, role=role, username=username, user_fullname=user_fullname)
     roles_db_session.add(role_db_record)

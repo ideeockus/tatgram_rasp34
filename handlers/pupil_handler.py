@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+# from aiogram.dispatcher.filters.state import State, StatesGroup
+from bot_storage.UserStates import PupilStates
 from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterday
 from bot_storage.rasp_base import get_all_classes
 from bot import dp
@@ -8,14 +9,15 @@ from bot_storage.Keyboards import pupil_kb, headman_kb
 from bot_storage import roles_base
 from aiogram.types import ParseMode
 from actions import pupils_rasp, teachers_rasp, feedback
+from utils.abg import abg_lost_role
 
 
-class PupilStates(StatesGroup):
-    waiting_for_class_name = State()  # ожидание номера класса
-    waiting_for_action = State()  # ожидание действий
-    waiting_for_identifier = State()  # ждет название класса
-    waiting_for_registration = State()
-    waiting_for_other_class_name = State()  # для другого класса
+# class PupilStates(StatesGroup):
+#     waiting_for_class_name = State()  # ожидание номера класса
+#     waiting_for_action = State()  # ожидание действий
+#     waiting_for_identifier = State()  # ждет название класса
+#     waiting_for_registration = State()
+#     waiting_for_other_class_name = State()  # для другого класса
 
 
 def get_current_kb(user_id):
@@ -70,9 +72,11 @@ async def rasp_by_day(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     class_name = roles_base.get_class_name(user_id)
     if class_name is None:
-        await message.answer("Упс, я не помню в каком вы классе")
-        await message.answer("Введите свой класс")
-        await PupilStates.waiting_for_registration.set()
+        await abg_lost_role(message, state)
+        # await message.answer("Упс, я не помню в каком вы классе")
+        # await message.answer("Введите свой класс")
+        # await PupilStates.waiting_for_registration.set()
+        return
     await state.update_data(class_name=class_name)
     await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id), class_name)
 

@@ -66,7 +66,8 @@ async def document_gotten(message: types.Message):
         rasp_update_thread = threading.Thread(target=export_xlsx_to_db, args=(loaded_rasp_file, message.from_user.id))
         rasp_update_thread.start()
         # rasp_update_thread.join()
-        await message.reply("База данных обновлется, это займет какое-то время", reply_markup=RaspUpdateKeyboards.end_keyboard)
+        await message.reply("База данных обновлется, это займет какое-то время",
+                            reply_markup=RaspUpdateKeyboards.end_keyboard)
     except Exception as error:
         print("При попытке загрузки расписание возникла ошибка")
         print(error)

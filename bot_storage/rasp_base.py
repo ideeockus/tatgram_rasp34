@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from bot_storage.configuration import postgresql_db_url
 from aiogram.utils.markdown import bold, code, italic, text
-from utils import abg
+from utils.abg import md_format
 
 """
 A - 0 empty column
@@ -66,7 +66,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
 
-    return abg.md_format(day_lessons_text_result)
+    return md_format(day_lessons_text_result)
 
 
 def get_lessons_for_today(class_name: str):
@@ -163,7 +163,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
     for start_time in start_times:
         day_lessons_text_result += day_lessons_dict[start_time]
 
-    return abg.md_format(day_lessons_text_result)
+    return md_format(day_lessons_text_result)
 
 
 
