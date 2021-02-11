@@ -46,7 +46,7 @@ async def reg_class(message: types.Message):
 
 
 @dp.message_handler(lambda m: m.text in ["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
-async def rasp_today_yesterday(message: types.Message):
+async def rasp_today_yesterday(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     role = roles_base.get_role(user_id)
     class_name = roles_base.get_class_name(user_id)
@@ -62,7 +62,9 @@ async def rasp_today_yesterday(message: types.Message):
             await message.answer(lessons, parse_mode=ParseMode.MARKDOWN)
             await PupilStates.waiting_for_action.set()
     else:
-        print("класс не указан")
+        await abg_lost_role(message, state)
+
+        print("класс пользователя не указан")
         await message.answer("Укажите свой класс, пожалуйста")
         await PupilStates.waiting_for_registration.set()
 
@@ -73,6 +75,10 @@ async def rasp_by_day(message: types.Message, state: FSMContext):
     class_name = roles_base.get_class_name(user_id)
     if class_name is None:
         await abg_lost_role(message, state)
+
+        print("класс пользователя не указан")
+        await message.answer("Укажите свой класс, пожалуйста")
+        await PupilStates.waiting_for_registration.set()
         # await message.answer("Упс, я не помню в каком вы классе")
         # await message.answer("Введите свой класс")
         # await PupilStates.waiting_for_registration.set()

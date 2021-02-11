@@ -121,7 +121,7 @@ async def define_action(message: types.Message, state: FSMContext):
     if user_role == "pupil" or user_role == "parent" or user_role == "headman":
         await pupil_handler.PupilStates.waiting_for_action.set()
         if message.text in ["На сегодня", "На завтра"]:
-            await pupil_handler.rasp_today_yesterday(message)
+            await pupil_handler.rasp_today_yesterday(message, state)
         elif message.text == "По дням":
             await pupil_handler.rasp_by_day(message, state)
         elif message.text == "Обратная связь":
@@ -205,7 +205,8 @@ async def empty_callback_query(callback_query: types.CallbackQuery, state: FSMCo
 async def error_handler(update: types.Update, exception: Exception):
     error_info_message = "Сообщение для администратора:\n" \
                          "Произошла ошибка при обработке сообщения пользователя " \
-                         f"@{update.message.from_user.username}\n" \
+                         f"@{update.message.from_user.username} [{update.message.from_user.id}]\n" \
+                         f"{update.message.from_user.full_name}\n" \
                          f"Сообщение: {update.message.text}\n\n" \
                          "Подробнее смотрите в логах.\n" + str(exception)
     if feedback_tg_id == creator_id:

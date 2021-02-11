@@ -47,7 +47,7 @@ async def feedback_text_gotten(message: types.Message, state: FSMContext):
     # feedback_msg = f"Сообщение от @{user_username}\n" \
     #                f"{user_full_name}\n" \
     #                f"роль: {user_role}\n\n{feedback_text}"
-    feedback_msg = text(bold(f"Сообщение от @{user_username}\n"),
+    feedback_msg = text(bold(f"Сообщение от @{user_username} [{user_id}]\n"),
                         code(f"{user_full_name}\n"),
                         italic(f"роль: {escape_md(user_role)}\n\n"),  # не добавлять в роль _ (будет конфликт с italic)
                         md_shielding(str(feedback_text))

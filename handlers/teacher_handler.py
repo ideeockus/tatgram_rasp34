@@ -71,6 +71,10 @@ async def rasp(message: types.Message, state: FSMContext):
     teacher_name = roles_base.get_teacher_name(user_id)
     if teacher_name is None:
         await abg_lost_role(message, state)
+
+        print("имя учителя не указано")
+        await message.answer("Укажите свое имя, пожалуйста")
+        await TeacherStates.waiting_for_identifier.set()
         # await message.answer("Упс, я забыл кто вы")
         # await message.answer("Введите свое имя")
         # await TeacherStates.waiting_for_identifier.set()

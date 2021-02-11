@@ -9,7 +9,7 @@ class PupilStates(StatesGroup):
     waiting_for_class_name = State()  # ожидание номера класса
     waiting_for_action = State()  # ожидание действий
     waiting_for_identifier = State()  # ждет название класса
-    waiting_for_registration = State()
+    waiting_for_registration = State()  # ждет название класса
     waiting_for_other_class_name = State()  # для другого класса
 
 

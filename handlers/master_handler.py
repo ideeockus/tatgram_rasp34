@@ -13,6 +13,7 @@ from actions import update_global_rasp
 from actions.pupils_rasp import make_pupil_rasp_request
 from actions.teachers_rasp import make_teacher_rasp_request
 from utils import abg, other
+import time
 
 
 # class MasterStates(StatesGroup):
@@ -71,8 +72,8 @@ async def text_for_broadcast_gotten(message: types.Message):
     for (index, user_id) in enumerate(users_id_set):
         try:
             # print("before;", datetime.datetime.now())
-            await asyncio.sleep(0.2)
-            # time.sleep(1)
+            # await asyncio.sleep(0.2)
+            time.sleep(0.2)
             await bot.send_message(user_id, text_to_broadcast, parse_mode=ParseMode.MARKDOWN)
             # await asyncio.sleep(10)
             # time.sleep(10)
