@@ -43,7 +43,7 @@ async def abg_lost_role(message: types.Message, state: FSMContext):
     await notify_admins(abg_info_text)
 
     # reregistration user
-    await message.answer("Упс, я забыл кто вы")
-    await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
-    await MainStates.wait_for_role.set()
+    # await message.answer("Упс, я забыл кто вы")
+    # await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+    # await MainStates.wait_for_role.set()
 
