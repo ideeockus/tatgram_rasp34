@@ -30,3 +30,17 @@ class MasterStates(StatesGroup):
     waiting_for_rasp_file = State()
 
 
+def get_role_waiting_for_action_state(role: str):
+    waiting_for_action_state = None
+    if role == "pupil" or role == "headman" or role == "parent":
+        waiting_for_action_state = PupilStates.waiting_for_action
+    elif role == "teacher":
+        waiting_for_action_state = TeacherStates.waiting_for_action
+    elif role == "master":
+        waiting_for_action_state = MasterStates.waiting_for_action
+    else:
+        waiting_for_action_state = MainStates.wait_for_role
+    return waiting_for_action_state
+
+
+

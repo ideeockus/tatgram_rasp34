@@ -70,9 +70,9 @@ async def rasp(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     teacher_name = roles_base.get_teacher_name(user_id)
     if teacher_name is None:
-        await abg_lost_role(message, state)
+        # await abg_lost_role(message, state)
 
-        print("имя учителя не указано")
+        print(f"имя учителя [{message.from_user.id}] не указано")
         await message.answer("Укажите свое имя, пожалуйста")
         await TeacherStates.waiting_for_identifier.set()
         # await message.answer("Упс, я забыл кто вы")
@@ -80,16 +80,17 @@ async def rasp(message: types.Message, state: FSMContext):
         # await TeacherStates.waiting_for_identifier.set()
         return
     await state.update_data(teacher_name=teacher_name.title())
-    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb, teacher_name)
+    await teachers_rasp.make_teacher_rasp_request(message, teacher_name)
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=TeacherStates.waiting_for_action)
 async def other_teachers_rasp(message: types.Message):
     print("Запрос расписания учителей")
-    await teachers_rasp.make_teacher_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb)
+    await teachers_rasp.make_teacher_rasp_request(message)
 
 
-@dp.message_handler(lambda m: m.text == "Отправить фото", state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
+@dp.message_handler(lambda m: m.text == "Отправить фото",
+                    state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def wanna_send_photo(message: types.Message):
     print("пользователь хочет прислать фото")
     await message.answer("Пожалуйста, отправьте фотографию", reply_markup=teacher_photo_sending_kb)
@@ -139,13 +140,14 @@ async def document_getting(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=TeacherStates.waiting_for_action)
 async def rasp_yesterday(message: types.Message, state: FSMContext):
     await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_kb)
-    await feedback.make_feedback(TeacherStates.waiting_for_action, end_keyboard=teacher_kb)
+    await feedback.make_feedback()
 
 
-@dp.message_handler(lambda m: m.text == "Расписание школьников", state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
+@dp.message_handler(lambda m: m.text == "Расписание школьников",
+                    state=TeacherStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def req_rasp_for_other_class(message: types.Message):
-    user_id = message.from_user.id
-    await pupils_rasp.make_pupil_rasp_request(message, TeacherStates.waiting_for_action, teacher_kb)
+    # user_id = message.from_user.id
+    await pupils_rasp.make_pupil_rasp_request(message)
 
 
 

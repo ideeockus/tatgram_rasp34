@@ -8,6 +8,9 @@ from bot import dp, bot
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
+from bot_storage.roles_base import get_role
+from bot_storage.UserStates import get_role_waiting_for_action_state
+from bot_storage.Keyboards import get_role_keyboard
 
 
 # class MainStates(StatesGroup):
@@ -25,7 +28,7 @@ async def start(message: types.Message, state: FSMContext):
     await MainStates.wait_for_role.set()
 
 
-from handlers import teacher_handler, pupil_handler, master_handler
+from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
 
 
 @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
@@ -160,32 +163,38 @@ async def define_action(message: types.Message, state: FSMContext):
             await message.answer("Команда не распознана")
 
 
-@dp.message_handler(lambda m: m.text == "Отмена", state="*", content_types=types.ContentType.TEXT)
-async def cancel_rasp_update(message: types.Message):
-    current_kb = pupil_handler.pupil_kb
-    current_state = pupil_handler.PupilStates.waiting_for_action
-    user_id = message.from_user.id
-    user_role = roles_base.get_role(user_id)
-    if user_role is None:
-        await message.answer("Ой, я кажется забыл кто вы")
-        await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
-        await MainStates.wait_for_role.set()
-
-    if user_role == "pupil" or user_role == "parent":
-        current_kb = pupil_handler.pupil_kb
-        current_state = pupil_handler.PupilStates.waiting_for_action
-    if user_role == "headman":
-        current_kb = headman_kb
-        current_state = pupil_handler.PupilStates.waiting_for_action
-    if user_role == "teacher":
-        current_kb = teacher_kb
-        current_state = teacher_handler.TeacherStates.waiting_for_action
-    if user_role == "master":
-        current_kb = secret_role_kb
-        current_state = master_handler.MasterStates.waiting_for_action
-
-    await current_state.set()
-    await message.reply("Отменено", reply_markup=current_kb)
+# @dp.message_handler(lambda m: m.text == "Отмена", state="*", content_types=types.ContentType.TEXT)
+# async def cancel_rasp_update(message: types.Message):
+    # # current_kb = pupil_handler.pupil_kb
+    # # current_state = pupil_handler.PupilStates.waiting_for_action
+    # user_id = message.from_user.id
+    # user_role = roles_base.get_role(user_id)
+    # if user_role is None:
+    #     await message.answer("Ой, я кажется забыл кто вы")
+    #     await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+    #     await MainStates.wait_for_role.set()
+    #
+    # if user_role == "pupil" or user_role == "parent":
+    #     current_kb = pupil_handler.pupil_kb
+    #     current_state = pupil_handler.PupilStates.waiting_for_action
+    # if user_role == "headman":
+    #     current_kb = headman_kb
+    #     current_state = pupil_handler.PupilStates.waiting_for_action
+    # if user_role == "teacher":
+    #     current_kb = teacher_kb
+    #     current_state = teacher_handler.TeacherStates.waiting_for_action
+    # if user_role == "master":
+    #     current_kb = secret_role_kb
+    #     current_state = master_handler.MasterStates.waiting_for_action
+    #
+    # await current_state.set()
+    # await message.reply("Отменено", reply_markup=current_kb)
+# @dp.message_handler(lambda m: m.text == "Отмена", state="*", content_types=types.ContentType.TEXT)
+# async def cancel_rasp_update(message: types.Message):
+#     user_id = message.from_user.id
+#     user_role = get_role(user_id)
+#     await get_role_waiting_for_action_state(user_role).set()
+#     await message.reply("Отменено", reply_markup=get_role_keyboard(user_role))
 
 
 @dp.message_handler(state="*")

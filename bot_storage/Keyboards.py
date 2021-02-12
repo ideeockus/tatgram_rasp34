@@ -87,7 +87,19 @@ cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_kb.add(cancel_button)
 
 
-
+def get_role_keyboard(role: str):
+    role_keyboard = None
+    if role == "pupil" or role == "parent":
+        role_keyboard = pupil_kb
+    elif role == "headman":
+        role_keyboard = headman_kb
+    elif role == "teacher":
+        role_keyboard = teacher_kb
+    elif role == "master":
+        role_keyboard = secret_role_kb
+    else:
+        role_keyboard = choose_role_kb
+    return role_keyboard
 
 
 

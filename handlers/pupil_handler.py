@@ -62,9 +62,9 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
             await message.answer(lessons, parse_mode=ParseMode.MARKDOWN)
             await PupilStates.waiting_for_action.set()
     else:
-        await abg_lost_role(message, state)
+        # await abg_lost_role(message, state)
 
-        print("класс пользователя не указан")
+        print(f"класс пользователя [{message.from_user.id}] не указан")
         await message.answer("Укажите свой класс, пожалуйста")
         await PupilStates.waiting_for_registration.set()
 
@@ -74,9 +74,9 @@ async def rasp_by_day(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     class_name = roles_base.get_class_name(user_id)
     if class_name is None:
-        await abg_lost_role(message, state)
+        # await abg_lost_role(message, state)
 
-        print("класс пользователя не указан")
+        print(f"класс пользователя [{message.from_user.id}] не указан")
         await message.answer("Укажите свой класс, пожалуйста")
         await PupilStates.waiting_for_registration.set()
         # await message.answer("Упс, я не помню в каком вы классе")
@@ -84,27 +84,27 @@ async def rasp_by_day(message: types.Message, state: FSMContext):
         # await PupilStates.waiting_for_registration.set()
         return
     await state.update_data(class_name=class_name)
-    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id), class_name)
+    await pupils_rasp.make_pupil_rasp_request(message, class_name)
 
 
 @dp.message_handler(lambda m: m.text == "Для другого класса", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def req_rasp_for_other_class(message: types.Message):
     user_id = message.from_user.id
-    await pupils_rasp.make_pupil_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id))
+    await pupils_rasp.make_pupil_rasp_request(message)
 
 
 @dp.message_handler(lambda m: m.text == "Расписание учителей", state=PupilStates.waiting_for_action)
 async def teacher_rasp(message: types.Message):
     user_id = message.from_user.id
     print("Запрос расписания учителей учеником")
-    await teachers_rasp.make_teacher_rasp_request(message, PupilStates.waiting_for_action, get_current_kb(user_id))
+    await teachers_rasp.make_teacher_rasp_request(message)
 
 
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=PupilStates.waiting_for_action)
 async def pupil_feedback(message: types.Message):
     user_id = message.from_user.id
     await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_kb)
-    await feedback.make_feedback(PupilStates.waiting_for_action, end_keyboard=get_current_kb(user_id))
+    await feedback.make_feedback()
 
 
 
