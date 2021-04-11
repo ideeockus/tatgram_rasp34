@@ -12,7 +12,11 @@ from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, cre
 from bot_storage.roles_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
+from periodic_operations import do_periodic_operation
 
+# from datetime import datetime, timedelta, time
+from bot_storage.bot_stats import clear_rasp_reqs_stat
+import datetime
 
 # class MainStates(StatesGroup):
 #     wait_for_role = State()
@@ -228,3 +232,9 @@ async def error_handler(update: types.Update, exception: Exception):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
+
+    today_midnight = datetime.datetime.combine(datetime.datetime.now().date(),
+                                               datetime.time(hour=23, minute=59, second=59))
+
+    do_periodic_operation(today_midnight,
+                          datetime.datetime.now()+datetime.timedelta(days=365), 24*60*60, clear_rasp_reqs_stat())

@@ -6,6 +6,8 @@ from bot_storage.configuration import postgresql_db_url
 from aiogram.utils.markdown import bold, code, italic, text
 from utils.abg import md_format
 
+from bot_storage.bot_stats import edit_stat
+
 """
 A - 0 empty column
 B - 1 class_name
@@ -39,6 +41,8 @@ Session = sessionmaker(bind=engine)
 
 
 def get_lessons_for_week_day(class_name: str, week_day: int):
+    edit_stat("get_rasp_total", 1)
+    edit_stat("get_class_rasp", 1)
 
     rasp_session = Session()
 
@@ -138,6 +142,8 @@ def get_all_teachers():
 
 
 def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
+    edit_stat("get_rasp_total", 1)
+    edit_stat("get_teacher_rasp", 1)
 
     rasp_session = Session()
 
@@ -170,6 +176,13 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
 
     rasp_session.close()
     return md_format(day_lessons_text_result)
+
+
+def get_teacher_week_rasp():
+    week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+
+    # for day in week_days_list:
+    #
 
 
 

@@ -38,7 +38,7 @@ def get_stats():
         'pupil': "Учеников",
         'parent': "Родителей",
         'master': "Администраторов",
-        'get_rasp_total': "Запросов расписания",
+        'get_rasp_total': "Всего запросов расписания",
         'get_class_rasp': "Запросов расписания по классам",
         'get_teacher_rasp': "Запросов расписания по учителям",
     }
@@ -46,7 +46,7 @@ def get_stats():
     stats = stats_db_session.query(Stat).all()
     stats_text = ""
     for stat in stats:
-        stats_text += stat_by_name.get(str(stat.name)) or str(stat.name) + " = " + str(stat.value) + "\n"
+        stats_text += (stat_by_name.get(str(stat.name)) or str(stat.name)) + " = " + str(stat.value) + "\n"
     stats_db_session.close()
     return stats_text
 
@@ -80,6 +80,15 @@ def edit_stat(stat_name: str, value_delta: int):
     stats_db_session.commit()
     stats_db_session.close()
 
+
+def clear_rasp_reqs_stat():
+    stats_db_session = Session()
+    clearing_stat_list = stats_db_session.query(Stat).filter(Stat.name in ["get_rasp_total",
+                                                                           "get_class_rasp", "get_teacher_rasp"]).all()
+    for clearing_stat in clearing_stat_list:
+        clearing_stat.value = 0
+    stats_db_session.commit()
+    stats_db_session.close()
 
 
 
