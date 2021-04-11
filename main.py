@@ -4,6 +4,7 @@ from aiogram.dispatcher import FSMContext
 # from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot_storage.UserStates import MainStates
 from bot import dp, bot
+from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
 # from handlers import teacher_handler, pupil_handler, master_handler  # (it imports after start function)
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
@@ -17,18 +18,18 @@ from bot_storage.Keyboards import get_role_keyboard
 #     wait_for_role = State()
 
 
-@dp.message_handler(commands=['start'], state="*")
-async def start(message: types.Message, state: FSMContext):
-    """
-    This handler will be called when user sends `/start` command
-    """
-    print("start", message.from_user)
-    await state.finish()
-    await message.answer("Здравствуйте. \n Выберите свою роль", reply_markup=choose_role_kb)
-    await MainStates.wait_for_role.set()
+# @dp.message_handler(commands=['start'], state="*")
+# async def start(message: types.Message, state: FSMContext):
+#     """
+#     This handler will be called when user sends `/start` command
+#     """
+#     print("start", message.from_user)
+#     await state.finish()
+#     await message.answer("Здравствуйте. \n Выберите свою роль", reply_markup=choose_role_kb)
+#     await MainStates.wait_for_role.set()
 
-
-from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
+#
+# from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
 
 
 @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
@@ -223,7 +224,7 @@ async def error_handler(update: types.Update, exception: Exception):
         return
     await bot.send_message(feedback_tg_id, error_info_message)
     await bot.send_message(creator_id, error_info_message)
-
+    # ## psycopg2.errors.AdminShutdown exception handler ?
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
