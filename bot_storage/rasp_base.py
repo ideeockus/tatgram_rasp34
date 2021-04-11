@@ -66,6 +66,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
 
+    rasp_session.close()
     return md_format(day_lessons_text_result)
 
 
@@ -87,6 +88,8 @@ def get_all_classes():
     classes = rasp_session.query(Lessons.class_name)  # выборка по бд
     for class_name in classes:
         classes_set.add(class_name.class_name)
+
+    rasp_session.close()
     return classes_set
 
 
@@ -129,6 +132,8 @@ def get_all_teachers():
                 teachers_set.add(teacher_name_splitted.strip().lower())
         else:
             teachers_set.add(teacher_name.lower())
+
+    rasp_session.close()
     return teachers_set
 
 
@@ -163,6 +168,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
     for start_time in start_times:
         day_lessons_text_result += day_lessons_dict[start_time]
 
+    rasp_session.close()
     return md_format(day_lessons_text_result)
 
 

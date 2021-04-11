@@ -1,8 +1,10 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from bot_storage import bot_stats
 from bot_storage.configuration import postgresql_db_url
+
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -17,6 +19,7 @@ class RoleRecord(Base):
     teacher_name = Column(String)  # имя учителя
     username = Column(String)
     user_fullname = Column(String)
+    registration_date = Column(DateTime)
 
 
 postgres_db = postgresql_db_url
@@ -38,9 +41,11 @@ def reg_new(user_id, role, username="", user_fullname=""):
     if (user_record.role if user_record is not None else None) is not None:
         print(f"у пользователя {user_id} уже есть роль", user_record.role)
         return
-    role_db_record = RoleRecord(user_id=user_id, role=role, username=username, user_fullname=user_fullname)
+    role_db_record = RoleRecord(user_id=user_id, role=role, username=username,
+                                user_fullname=user_fullname, registration_date=datetime.now())
     roles_db_session.add(role_db_record)
     roles_db_session.commit()
+    roles_db_session.close()
 
     bot_stats.new_user(role)  # учет статистики
 
@@ -67,6 +72,7 @@ def set_identifier(user_id, identifier):
         return
     user_record.identifier = identifier
     roles_db_session.commit()
+    roles_db_session.close()
 
 
 def set_class_name(user_id, class_name):
@@ -80,6 +86,7 @@ def set_class_name(user_id, class_name):
         return
     user_record.class_name = class_name
     roles_db_session.commit()
+    roles_db_session.close()
 
 
 def set_teacher_name(user_id, teacher_name):
@@ -93,6 +100,7 @@ def set_teacher_name(user_id, teacher_name):
         return
     user_record.teacher_name = teacher_name
     roles_db_session.commit()
+    roles_db_session.close()
 
 
 def del_user_role(user_id):
@@ -103,6 +111,7 @@ def del_user_role(user_id):
     for user_record in user_records:
         roles_db_session.delete(user_record)
     roles_db_session.commit()
+    roles_db_session.close()
 
 
 def change_role(user_id, new_role):
@@ -121,6 +130,7 @@ def change_role(user_id, new_role):
     # role_db_record = RoleRecord(user_id=user_id, role=new_role)
     # roles_db_session.add(role_db_record)
     roles_db_session.commit()
+    roles_db_session.close()
 
     bot_stats.edit_stat(new_role, 1)
 
@@ -133,6 +143,7 @@ def get_role(user_id):
     if user_records is None:
         return None
     user_role = user_records.role
+    roles_db_session.close()
     # user_roles = []
     #
     # for user_record in user_records:
@@ -150,6 +161,8 @@ def get_identifier(user_id):
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     user_identifier = user_records.identifier
+
+    roles_db_session.close()
     return user_identifier
 
 
@@ -159,6 +172,8 @@ def get_class_name(user_id):
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     class_name = user_records.class_name
+
+    roles_db_session.close()
     return class_name
 
 
@@ -168,6 +183,8 @@ def get_teacher_name(user_id):
     user_id = str(user_id)
     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
     teacher_name = user_records.teacher_name
+
+    roles_db_session.close()
     return teacher_name
 
 
@@ -178,6 +195,8 @@ def get_all_users():
     user_records = roles_db_session.query(RoleRecord).all()
     for user_record in user_records:
         user_id_set.add(user_record.user_id)
+
+    roles_db_session.close()
     return user_id_set
 
 

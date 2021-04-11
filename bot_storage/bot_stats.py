@@ -20,6 +20,8 @@ class StatFields(Enum):
     TEACHERS = "teachers"
     PARENTS = "parents"
 
+    GET_CLASS_RASP = "get"
+
 
 postgres_db = postgresql_db_url
 engine = create_engine(postgres_db, echo=False)
@@ -29,11 +31,23 @@ Session = sessionmaker(bind=engine)
 
 
 def get_stats():
+    stat_by_name = {
+        'total_users': "Всего пользователей",
+        'teacher': "Учителей",
+        'headman': "Старост",
+        'pupil': "Учеников",
+        'parent': "Родителей",
+        'master': "Администраторов",
+        'get_rasp_total': "Запросов расписания",
+        'get_class_rasp': "Запросов расписания по классам",
+        'get_teacher_rasp': "Запросов расписания по учителям",
+    }
     stats_db_session = Session()
     stats = stats_db_session.query(Stat).all()
     stats_text = ""
     for stat in stats:
-        stats_text += str(stat.name) + " = " + str(stat.value) + "\n"
+        stats_text += stat_by_name.get(str(stat.name)) or str(stat.name) + " = " + str(stat.value) + "\n"
+    stats_db_session.close()
     return stats_text
 
 
@@ -52,6 +66,7 @@ def new_user(role: str):
     roles.value += 1
 
     stats_db_session.commit()
+    stats_db_session.close()
 
 
 def edit_stat(stat_name: str, value_delta: int):
@@ -63,6 +78,7 @@ def edit_stat(stat_name: str, value_delta: int):
         editable_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
     editable_stat.value += value_delta
     stats_db_session.commit()
+    stats_db_session.close()
 
 
 
