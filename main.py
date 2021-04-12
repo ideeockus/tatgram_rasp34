@@ -238,8 +238,9 @@ async def error_handler(update: types.Update, exception: Exception):
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
 
+    # код не запустится и вообще решение не очень
     today_midnight = datetime.datetime.combine(datetime.datetime.now().date(),
                                                datetime.time(hour=23, minute=59, second=59))
 
-    do_periodic_operation(today_midnight,
-                          datetime.datetime.now()+datetime.timedelta(days=365), 24*60*60, clear_rasp_reqs_stat())
+    # do_periodic_operation(today_midnight,
+    #                       datetime.datetime.now()+datetime.timedelta(days=365), 24*60*60, clear_rasp_reqs_stat())

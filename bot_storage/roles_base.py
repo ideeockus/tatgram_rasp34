@@ -6,6 +6,8 @@ from bot_storage.configuration import postgresql_db_url
 
 from datetime import datetime
 
+from libs import Roles
+
 Base = declarative_base()
 
 
@@ -193,6 +195,18 @@ def get_all_users():
 
     user_id_set = set()
     user_records = roles_db_session.query(RoleRecord).all()
+    for user_record in user_records:
+        user_id_set.add(user_record.user_id)
+
+    roles_db_session.close()
+    return user_id_set
+
+
+def get_users_by_role(role: Roles):
+    roles_db_session = Session()
+
+    user_id_set = set()
+    user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.role == role.name).all()
     for user_record in user_records:
         user_id_set.add(user_record.user_id)
 

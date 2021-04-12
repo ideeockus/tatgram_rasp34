@@ -30,7 +30,7 @@ pupil_kb.add(feedback_button)
 week_start_timedelta = timedelta(days=datetime.now().weekday())
 week_start_date = datetime.now() - week_start_timedelta
 week_days_text = []
-dd = [(week_start_date+timedelta(days=i)).date() for i in range(7)]
+dd = [(week_start_date+timedelta(days=i)).date() for i in range(8)]
 for d in list(map(lambda d: str(d).split("-")[1:], dd)):
     d.reverse()
     week_days_text.append(".".join(d))
@@ -41,7 +41,7 @@ wed_button = InlineKeyboardButton("Среда "+week_days_text[2], callback_data
 thu_button = InlineKeyboardButton("Четверг "+week_days_text[3], callback_data="thursday")
 fri_button = InlineKeyboardButton("Пятница "+week_days_text[4], callback_data="friday")
 sat_button = InlineKeyboardButton("Суббота "+week_days_text[5], callback_data="saturday")
-week_button = InlineKeyboardButton(f"Неделя {week_days_text[0]} - {week_days_text[5]}", callback_data="week")
+week_button = InlineKeyboardButton(f"Неделя {week_days_text[0]} - {week_days_text[7]}", callback_data="week")
 
 rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
 rasp_by_days_kb.row(week_button)
@@ -70,6 +70,17 @@ headman_kb.add(rasp_by_day_button)
 headman_kb.add(other_class_rasp_button, all_teachers_rasp_button)
 headman_kb.add(feedback_button)
 
+# Клавиатура для выбора цели рассылки
+broadcast_choose_target_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+teacher_target_btn = KeyboardButton("Учителям")
+pupil_target_btn = KeyboardButton("Ученикам")
+parent_target_btn = KeyboardButton("Родителям")
+headman_target_btn = KeyboardButton("Старостам")
+all_target_btn = KeyboardButton("Общая рассылка")
+cancel_btn = KeyboardButton("Отмена")
+broadcast_choose_target_kb.row(all_target_btn)
+broadcast_choose_target_kb.add(teacher_target_btn, pupil_target_btn, parent_target_btn, headman_target_btn)
+broadcast_choose_target_kb.row(cancel_btn)
 
 # Клавиатура админа
 secret_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
