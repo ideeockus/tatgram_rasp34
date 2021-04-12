@@ -217,9 +217,9 @@ async def empty_callback_query(callback_query: types.CallbackQuery, state: FSMCo
 
 @dp.errors_handler()
 async def error_handler(update: types.Update, exception: Exception):
-    error_info_message = "🙄 Возникла какая-то ошибка, описание недоступно. Возможно пора вызывать магов 🔮\n\n"
+    error_info_message = "Возникла какая-то ошибка 🙄, описание недоступно. Возможно пора вызывать магов 🔮\n\n"
     try:
-        error_info_message = "Сообщение для администратора:\n" \
+        error_info_message = "🙄🙄🙄\nСообщение для администратора:\n" \
                              "Произошла ошибка при обработке сообщения пользователя " \
                              f"@{update.message.from_user.username} [{update.message.from_user.id}]\n" \
                              f"{update.message.from_user.full_name}\n" \

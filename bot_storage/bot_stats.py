@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from bot_storage.configuration import postgresql_db_url
 from enum import Enum
+import json
 
 Base = declarative_base()
 
@@ -51,6 +52,18 @@ def get_stats():
     return stats_text
 
 
+def inc_req_stat_by_class(classname: str):
+    stats_db_session = Session()
+    requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == f"Запросов для {classname}").scalar()
+    if requests_by_class_stat is None:
+        stats_db_session.add(Stat(name=f"Запросов для {classname}", value=1))
+        requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == f"Запросов для {classname}").scalar()
+    else:
+        requests_by_class_stat.value += 1
+    stats_db_session.commit()
+    stats_db_session.close()
+
+
 def new_user(role: str):
     stats_db_session = Session()
     total_users = stats_db_session.query(Stat).filter(Stat.name == "total_users").scalar()
@@ -89,7 +102,6 @@ def clear_rasp_reqs_stat():
         clearing_stat.value = 0
     stats_db_session.commit()
     stats_db_session.close()
-
 
 
 

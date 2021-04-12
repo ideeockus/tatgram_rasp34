@@ -8,7 +8,7 @@ from aiogram.utils.markdown import bold, code, italic, text
 from libs import Roles
 from utils.abg import md_format
 
-from bot_storage.bot_stats import edit_stat
+from bot_storage.bot_stats import edit_stat, inc_req_stat_by_class
 
 """
 A - 0 empty column
@@ -42,9 +42,11 @@ Session = sessionmaker(bind=engine)
 # rasp_session = Session()
 
 
-def get_lessons_for_week_day(class_name: str, week_day: int):
-    edit_stat("get_rasp_total", 1)
-    edit_stat("get_class_rasp", 1)
+def get_lessons_for_week_day(class_name: str, week_day: int, update_stats=True):
+    if update_stats:
+        edit_stat("get_rasp_total", 1)
+        edit_stat("get_class_rasp", 1)
+        inc_req_stat_by_class(class_name)
 
     rasp_session = Session()
 
@@ -143,9 +145,10 @@ def get_all_teachers():
     return teachers_set
 
 
-def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
-    edit_stat("get_rasp_total", 1)
-    edit_stat("get_teacher_rasp", 1)
+def get_teacher_lessons_for_week_day(teacher: str, week_day: int, update_stats=True):
+    if update_stats:
+        edit_stat("get_rasp_total", 1)
+        edit_stat("get_teacher_rasp", 1)
 
     rasp_session = Session()
 
@@ -189,12 +192,20 @@ def get_week_rasp_by_role(role: str, identifier: str):
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     week_rasp = ""
 
+    # учесть в статистике
+    edit_stat("get_rasp_total", 1)
+    if role == Roles.teacher.name:
+        edit_stat("get_teacher_rasp", 1)
+    elif role == Roles.pupil.name:
+        edit_stat("get_class_rasp", 1)
+        inc_req_stat_by_class(identifier)
+
     for day_num in range(len(week_days_list)):
         if role == Roles.teacher.name:
-            day_rasp = get_teacher_lessons_for_week_day(identifier, day_num)
+            day_rasp = get_teacher_lessons_for_week_day(identifier, day_num, False)
             week_rasp += day_rasp[day_rasp.index("\n"):]  # без первой строки
         elif role == Roles.pupil.name:
-            day_rasp = get_lessons_for_week_day(identifier, day_num)
+            day_rasp = get_lessons_for_week_day(identifier, day_num, False)
             week_rasp += day_rasp[day_rasp.index("\n"):]  # без первой строки
     return f"Расписание на неделю для {identifier}\n" + week_rasp
 
