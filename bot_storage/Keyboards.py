@@ -26,7 +26,7 @@ pupil_kb.add(other_class_rasp_button)
 pupil_kb.add(feedback_button)
 
 
-# Инлайн клавиатура
+# Инлайн клавиатура выбора расписания
 week_start_timedelta = timedelta(days=datetime.now().weekday())
 week_start_date = datetime.now() - week_start_timedelta
 week_days_text = []
@@ -41,7 +41,10 @@ wed_button = InlineKeyboardButton("Среда "+week_days_text[2], callback_data
 thu_button = InlineKeyboardButton("Четверг "+week_days_text[3], callback_data="thursday")
 fri_button = InlineKeyboardButton("Пятница "+week_days_text[4], callback_data="friday")
 sat_button = InlineKeyboardButton("Суббота "+week_days_text[5], callback_data="saturday")
+week_button = InlineKeyboardButton(f"Неделя {week_days_text[0]} - {week_days_text[5]}", callback_data="week")
+
 rasp_by_days_kb.add(mon_button, tue_button, wed_button, thu_button, fri_button, sat_button)
+rasp_by_days_kb.row(week_button)
 
 
 # Клавиатура учителей

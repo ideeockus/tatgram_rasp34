@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
-from bot_storage.rasp_base import get_all_classes, get_lessons_for_week_day
+from bot_storage.rasp_base import get_all_classes, get_lessons_for_week_day, get_week_rasp_by_role
 from bot_storage.UserStates import PupilStates
 from utils.abg import md_shielding, md_format
 from bot_storage.roles_base import get_role
@@ -62,7 +62,8 @@ async def get_class_name(message: types.Message, state: FSMContext):
         await message.answer("Не могу найти такого класса, введите еще раз")
 
 
-@dp.callback_query_handler(lambda cq: cq.data in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+@dp.callback_query_handler(lambda cq: cq.data in ["monday", "tuesday", "wednesday",
+                                                  "thursday", "friday", "saturday", "week"],
                            state=PupilsRaspReqStates.waiting_for_inline_week_day_chose)
 async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state: FSMContext):
     print(f"callback_data: {callback_query.data}")
@@ -81,7 +82,11 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     class_name = user_data['class_name']
     print("запрос расписания для", class_name, "на", week_day)
     if class_name is not None:
-        lessons = get_lessons_for_week_day(class_name, callback_data_text[week_day])
+        lessons = None
+        if week_day == "week":  # если на всю неделю
+            lessons = get_week_rasp_by_role("pupil", class_name)
+        else:
+            lessons = get_lessons_for_week_day(class_name, callback_data_text[week_day])
         # lessons = md_format(lessons)
         # print(lessons)
         await bot.send_message(user_id, lessons,

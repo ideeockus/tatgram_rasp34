@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from bot_storage.configuration import postgresql_db_url
 from aiogram.utils.markdown import bold, code, italic, text
+
+from libs import Roles
 from utils.abg import md_format
 
 from bot_storage.bot_stats import edit_stat
@@ -65,7 +67,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int):
         # day_lessons_text += (f"[{lesson_start} - {lesson_end}]"+subject_name)+room_number+teacher_name+"\n\n"
     if day_lessons_text == "":
         # print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
-        day_lessons_text = "Выходной"  # EDIT THIS LINE LATER
+        day_lessons_text = "Выходной\n"  # EDIT THIS LINE LATER
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
@@ -165,7 +167,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
                                               italic(subject_name), "у", bold(class_name), room_number, "\n\n")
     if len(day_lessons_dict) == 0:
         # print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
-        day_lessons_dict['dayoff'] = "Выходной"
+        day_lessons_dict['dayoff'] = "Выходной\n"
     day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
 
@@ -178,11 +180,25 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int):
     return md_format(day_lessons_text_result)
 
 
-def get_teacher_week_rasp():
+def get_week_rasp_by_role(role: str, identifier: str):
+    """
+    :param role:
+    :param identifier: teacher name or class name
+    :return:
+    """
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+    week_rasp = ""
 
-    # for day in week_days_list:
-    #
+    for day_num in range(len(week_days_list)):
+        if role == Roles.teacher.name:
+            day_rasp = get_teacher_lessons_for_week_day(identifier, day_num)
+            week_rasp += day_rasp[day_rasp.index("\n"):]  # без первой строки
+        elif role == Roles.pupil.name:
+            day_rasp = get_lessons_for_week_day(identifier, day_num)
+            week_rasp += day_rasp[day_rasp.index("\n"):]  # без первой строки
+    return f"Расписание на неделю для {identifier}\n" + week_rasp
+
+
 
 
 
