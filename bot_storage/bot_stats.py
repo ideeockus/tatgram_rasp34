@@ -31,7 +31,24 @@ Session = sessionmaker(bind=engine)
 # stats_db_session = Session()
 
 
-def get_stats():
+class StatsType(Enum):
+    General = "general"
+    ByClass = "byclass"
+
+
+# by_class_bd_values = {
+#     # перевод значений из бд в human-readable формат
+#     "for_class_": "Запросов для "
+# }
+
+# human_readable_format = {
+#     'for_class': "Запросов для класса "
+# }
+
+by_class_prefix = "Запросов для класса"
+
+
+def get_stats(stats_type: StatsType):
     stat_by_name = {
         'total_users': "Всего пользователей",
         'teacher': "Учителей",
@@ -47,21 +64,50 @@ def get_stats():
     stats = stats_db_session.query(Stat).all()
     stats_text = ""
     for stat in stats:
-        stats_text += (stat_by_name.get(str(stat.name)) or str(stat.name)) + " = " + str(stat.value) + "\n"
+        if stats_type == StatsType.General and (stat.name in stat_by_name.keys()):
+            stats_text += stat_by_name.get(str(stat.name)) + " = " + str(stat.value) + "\n"
+        if stats_type == StatsType.ByClass and (stat.name not in stat_by_name.keys()) and by_class_prefix in stat.name:
+            stats_text += str(stat.name) + " = " + str(stat.value) + "\n"
+        # stats_text += (stat_by_name.get(str(stat.name)) or str(stat.name)) + " = " + str(stat.value) + "\n"
     stats_db_session.close()
     return stats_text
 
 
 def inc_req_stat_by_class(classname: str):
     stats_db_session = Session()
-    requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == f"Запросов для {classname}").scalar()
+    requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == f"{by_class_prefix} {classname}").scalar()
     if requests_by_class_stat is None:
-        stats_db_session.add(Stat(name=f"Запросов для {classname}", value=1))
-        requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == f"Запросов для {classname}").scalar()
+        stats_db_session.add(Stat(name=f"{by_class_prefix} {classname}", value=1))
+        # requests_by_class_stat = \
+        #     stats_db_session.query(Stat).filter(Stat.name == f"{by_class_prefix} {classname}").scalar()
     else:
         requests_by_class_stat.value += 1
     stats_db_session.commit()
     stats_db_session.close()
+
+
+def parse_stat_by_class(stat_by_class_text: str):
+    by_class_res_dict = {}
+    for s in stat_by_class_text.split("\n"):
+        if by_class_prefix not in s:
+            continue
+        class_name_with_prefix, stat_count = s.split("=")
+        class_name = class_name_with_prefix[len(by_class_prefix):]  # тут еще пробел учитывается
+        by_class_res_dict[class_name.strip()] = int(stat_count)
+    return by_class_res_dict
+
+
+# def inc_req_stat_by_class(classname: str):
+#     stats_db_session = Session()
+#     stat_name = f"REQ{classname}"
+#     requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
+#     if requests_by_class_stat is None:
+#         stats_db_session.add(Stat(name=stat_name, value=1))
+#         requests_by_class_stat = stats_db_session.query(Stat).filter(Stat.name == stat_name).scalar()
+#     else:
+#         requests_by_class_stat.value += 1
+#     stats_db_session.commit()
+#     stats_db_session.close()
 
 
 def new_user(role: str):

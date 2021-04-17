@@ -51,14 +51,32 @@ async def cancel(message: types.Message):
     await MasterStates.waiting_for_action.set()
 
 
-@dp.message_handler(lambda m: m.text == "Статистика", state=MasterStates.waiting_for_action)
+@dp.message_handler(lambda m: any(word in m.text for word in ["Статистика", "стат", "Стат", "stat"]),
+                    state=MasterStates.waiting_for_action)
 async def stats(message: types.Message):
     print("show statistics to master")
     if not await validate_master(message):
         return
 
-    usage_stats = bot_stats.get_stats()
-    await message.answer(usage_stats)
+    replying_for = message.reply_to_message
+    usage_stats_by_class = ""
+    if replying_for is None:
+        usage_stats_by_class = bot_stats.get_stats(bot_stats.StatsType.ByClass)
+    else:
+        new_stats_by_class = bot_stats.parse_stat_by_class(bot_stats.get_stats(bot_stats.StatsType.ByClass))
+        old_stats_by_class = bot_stats.parse_stat_by_class(replying_for.text)
+
+        # print("old stat", old_stats_by_class)
+        # print("new stat", new_stats_by_class)
+
+        for class_name, stat_count in new_stats_by_class.items():
+            if class_name not in old_stats_by_class.keys():
+                continue
+            usage_stats_by_class += f"{bot_stats.by_class_prefix} {class_name} =" \
+                                    f" {new_stats_by_class[class_name] - old_stats_by_class[class_name]}\n"
+
+    usage_stats_general = bot_stats.get_stats(bot_stats.StatsType.General)
+    await message.answer(usage_stats_general + "\n" + usage_stats_by_class)
 
 
 @dp.message_handler(lambda m: m.text == "Рассылка", state=MasterStates.waiting_for_action)
