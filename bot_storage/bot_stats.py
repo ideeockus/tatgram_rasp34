@@ -46,10 +46,7 @@ class StatsType(Enum):
 # }
 
 by_class_prefix = "Запросов для класса"
-
-
-def get_stats(stats_type: StatsType):
-    stat_by_name = {
+stat_by_name = {
         'total_users': "Всего пользователей",
         'teacher': "Учителей",
         'headman': "Старост",
@@ -60,6 +57,9 @@ def get_stats(stats_type: StatsType):
         'get_class_rasp': "Запросов расписания по классам",
         'get_teacher_rasp': "Запросов расписания по учителям",
     }
+
+
+def get_stats(stats_type: StatsType):
     stats_db_session = Session()
     stats = stats_db_session.query(Stat).all()
     stats_text = ""
@@ -86,7 +86,19 @@ def inc_req_stat_by_class(classname: str):
     stats_db_session.close()
 
 
-def parse_stat_by_class(stat_by_class_text: str):
+def clean_stats(stats_type: StatsType):
+    stats_db_session = Session()
+    stats = stats_db_session.query(Stat).all()
+    for stat in stats:
+        if stats_type == StatsType.General and (stat.name in stat_by_name.keys()):
+            stats_db_session.delete(stat)
+        if stats_type == StatsType.ByClass and (stat.name not in stat_by_name.keys()) and by_class_prefix in stat.name:
+            stats_db_session.delete(stat)
+    stats_db_session.commit()
+    stats_db_session.close()
+
+
+def parse_stat_by_class(stat_by_class_text: str) -> dict:
     by_class_res_dict = {}
     for s in stat_by_class_text.split("\n"):
         if by_class_prefix not in s:
@@ -140,14 +152,14 @@ def edit_stat(stat_name: str, value_delta: int):
     stats_db_session.close()
 
 
-def clear_rasp_reqs_stat():
-    stats_db_session = Session()
-    clearing_stat_list = stats_db_session.query(Stat).filter(Stat.name in ["get_rasp_total",
-                                                                           "get_class_rasp", "get_teacher_rasp"]).all()
-    for clearing_stat in clearing_stat_list:
-        clearing_stat.value = 0
-    stats_db_session.commit()
-    stats_db_session.close()
+# def clear_rasp_reqs_stat():
+#     stats_db_session = Session()
+#     clearing_stat_list = stats_db_session.query(Stat).filter(Stat.name in ["get_rasp_total",
+#                                                                            "get_class_rasp", "get_teacher_rasp"]).all()
+#     for clearing_stat in clearing_stat_list:
+#         clearing_stat.value = 0
+#     stats_db_session.commit()
+#     stats_db_session.close()
 
 
 

@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from actions.notify_admins import notify_admins, notify_admins_photo
 from bot import dp, bot
-from bot_storage.configuration import feedback_tg_id, allow_broadcasts
+from bot_storage.configuration import allow_broadcasts
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode
