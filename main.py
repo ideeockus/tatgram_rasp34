@@ -7,7 +7,7 @@ from handlers import common_handlers, teacher_handler, pupil_handler, master_han
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
-from utils.scheduled_tasks import set_midnight_stats_clear_task
+from utils.scheduled_tasks import set_weakly_stats_clear_task
 from actions.notify_admins import notify_admins
 
 
@@ -140,7 +140,7 @@ async def error_handler(update: types.Update, exception: Exception):
 
 async def on_aiogram_startup(aiogram_dp: Dispatcher):
     await notify_admins("Бот запущен 🤖")
-    set_midnight_stats_clear_task()
+    set_weakly_stats_clear_task(False)
 
 
 async def on_aiogram_shutdown(aiogram_dp: Dispatcher):
