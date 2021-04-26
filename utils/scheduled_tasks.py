@@ -54,7 +54,7 @@ def set_weakly_stats_clear_task(clean_on_start=True):
     stat_clean_dt = datetime(current_dt.year, current_dt.month, current_dt.day-current_dt.weekday(), 23, 59, 59)
     seconds_until_clean = (stat_clean_dt - datetime.now()).seconds
     if seconds_until_clean <= 5:  # если осталось меньше 5 секунд
-        seconds_until_midnight = 86400*7
+        seconds_until_clean = 86400*7
     print("Следующая очистка статистики запланирована на",
           (datetime.now() + timedelta(seconds=seconds_until_clean)).isoformat())
 

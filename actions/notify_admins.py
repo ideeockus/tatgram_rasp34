@@ -20,3 +20,12 @@ async def notify_admins_photo(master_info_photo):
     await bot.send_photo(creator_id, master_info_photo)
 
 
+async def quiet_admin_notification(master_info_message: str):
+    master_info_message = master_info_message
+    if feedback_tg_id == creator_id:
+        await bot.send_message(creator_id, master_info_message, disable_notification=True)
+        return
+    await bot.send_message(feedback_tg_id, master_info_message, disable_notification=True)
+    await bot.send_message(creator_id, master_info_message, disable_notification=True)
+
+
