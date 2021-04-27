@@ -80,7 +80,7 @@ def set_message_timeout(chat_id: int, message_id: int, message_timeout=10):
     asyncio.get_event_loop().call_later(message_timeout, del_msg)
 
 
-def set_message_timeout_and_reset_state(user_id: int, chat_id: int, message_id: int, message_timeout=10):
+def set_message_timeout_and_reset_state(user_id: int, chat_id: int, message_id: int, message_timeout=60):
     #  TODO: add user_state: FSMContext arg with set_state()
     """
     Сейчас вызывается только в текущем контексте
