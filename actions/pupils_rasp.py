@@ -10,6 +10,7 @@ from utils.abg import md_shielding, md_format
 from bot_storage.roles_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
+from utils.scheduled_tasks import set_message_timeout_and_reset_state
 
 
 class PupilsRaspReqStates(StatesGroup):
@@ -26,6 +27,7 @@ class PupilsRaspReqStates(StatesGroup):
 
 
 async def make_pupil_rasp_request(message: types.Message, class_name=None):
+    # TODO: приделать сюда FSMContext и убрать дубликацию кода
     print(f"action make_pupil_rasp_request, class_name = {class_name}")
     # action_vars['keyboard'] = role_keyboard
     # PupilsRaspReqStates.waiting_for_action = PupilStates.waiting_for_action
@@ -34,8 +36,10 @@ async def make_pupil_rasp_request(message: types.Message, class_name=None):
         await message.answer("Для какого класса вы хотите узнать расписание?", reply_markup=cancel_kb)
         await PupilsRaspReqStates.waiting_for_class_name.set()
     else:
-        await message.answer("Запрос расписания", reply_markup=cancel_kb)
-        await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
+        await message.answer(f"Запрос расписания для класса {class_name}",
+                             reply_markup=get_role_keyboard(get_role(message.from_user.id)))
+        kb_msg = await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
+        set_message_timeout_and_reset_state(message.from_user.id, kb_msg.chat.id, kb_msg.message_id)
         await PupilsRaspReqStates.waiting_for_inline_week_day_chose.set()
 
 
@@ -56,7 +60,11 @@ async def get_class_name(message: types.Message, state: FSMContext):
     classes_set = set(map(str.lower, get_all_classes()))
     if class_name in classes_set:
         await state.update_data(class_name=class_name)
-        await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
+        await message.answer(f"Запрос расписания для класса {class_name}",
+                             reply_markup=get_role_keyboard(get_role(message.from_user.id)))
+        kb_msg = await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
+        set_message_timeout_and_reset_state(message.from_user.id, kb_msg.chat.id, kb_msg.message_id)
+
         await PupilsRaspReqStates.waiting_for_inline_week_day_chose.set()
     else:
         await message.answer("Не могу найти такого класса, введите еще раз")
@@ -95,5 +103,4 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
     else:
         await PupilsRaspReqStates.waiting_for_class_name.set()
         await bot.send_message(chat_id=callback_query.message.chat.id, text="Для кого вы хотите узнать распиание?")
-
 

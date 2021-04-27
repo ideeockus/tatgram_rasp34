@@ -1,8 +1,9 @@
 from aiogram import executor, types, Dispatcher
 from bot_storage.Keyboards import teacher_kb, choose_role_kb, headman_kb
 from aiogram.dispatcher import FSMContext
-from bot_storage.UserStates import MainStates
+from bot_storage.UserStates import MainStates, get_role_waiting_for_action_state
 from bot import dp, bot
+from bot_storage.roles_base import get_role
 from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
 from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
 from bot_storage import roles_base
@@ -107,7 +108,13 @@ async def define_action(message: types.Message, state: FSMContext):
 @dp.message_handler(state="*")
 async def other_msg(message: types.Message, state: FSMContext):
     print(f"other message, state: {await state.get_state()}; state_data: {await state.get_data()}")
-    await message.reply("Не могу определить что мне нужно делать")
+    user_state = await state.get_state()
+
+    if user_state == get_role_waiting_for_action_state(get_role(message.from_user.id)).state:
+        # base state
+        await message.reply("Не могу определить что мне нужно делать")
+    else:
+        await message.reply("Сначала завершите предыдущее действие")
 
 
 @dp.callback_query_handler(state="*")

@@ -11,6 +11,7 @@ from utils.abg import md_format
 from bot_storage.roles_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
+from utils.scheduled_tasks import set_message_timeout_and_reset_state
 
 
 class TeacherRaspReqStates(StatesGroup):
@@ -24,13 +25,16 @@ def md_shielding(md_text: str) -> str:
 
 
 async def make_teacher_rasp_request(message: types.Message, teacher_name=None):
+    # TODO: приделать сюда FSMContext и убрать дубликацию кода
     print(f"action make_teacher_rasp_request, teacher_name = {teacher_name}")
     if teacher_name is None:
         await message.answer("Для кого вы хотите узнать расписание?", reply_markup=cancel_kb)
         await TeacherRaspReqStates.waiting_for_teacher_name.set()
     else:
-        await message.answer("Запрос расписания", reply_markup=cancel_kb)
-        await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
+        await message.answer(f"Запрос расписания для {teacher_name}",
+                             reply_markup=get_role_keyboard(get_role(message.from_user.id)))
+        kb_msg = await message.answer("Выберите день недели", reply_markup=rasp_by_days_kb)
+        set_message_timeout_and_reset_state(message.from_user.id, kb_msg.chat.id, kb_msg.message_id)
         await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
 
 
@@ -42,7 +46,10 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
     teachers_set = set(map(str.lower, get_all_teachers()))
     if teacher_name in teachers_set:
         await state.update_data(teacher_name=teacher_name.title())
-        await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
+        await message.answer(f"Запрос расписания для {teacher_name}",
+                             reply_markup=get_role_keyboard(get_role(message.from_user.id)))
+        kb_msg = await message.answer("Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
+        set_message_timeout_and_reset_state(message.from_user.id, kb_msg.chat.id, kb_msg.message_id)
         await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
     else:
         teachers_choose_list = []
@@ -56,7 +63,8 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
         if len(teachers_choose_list) < 1:
             await message.reply("Я не нашел такого учителя, введите снова")
         elif len(teachers_choose_list) >= 1:
-            await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
+            teachers_kb = await message.answer("Выберите учителя из списка", reply_markup=teachers_choose_list_kb)
+            set_message_timeout_and_reset_state(message.from_user.id, teachers_kb.chat.id, teachers_kb.message_id)
 
 
 @dp.callback_query_handler(state=TeacherRaspReqStates.waiting_for_teacher_name)
@@ -66,7 +74,9 @@ async def teacher_full_name_inline(callback_query: types.CallbackQuery, state: F
     teacher_name = callback_query.data
     print("выбор", teacher_name, "с инлайн клавиатуры")
     await state.update_data(teacher_name=teacher_name.title())
-    await bot.send_message(callback_query.from_user.id, "Хорошо, выберите день недели", reply_markup=rasp_by_days_kb)
+    kb_msg = await bot.send_message(callback_query.from_user.id, "Хорошо, выберите день недели",
+                                    reply_markup=rasp_by_days_kb)
+    set_message_timeout_and_reset_state(callback_query.from_user.id, kb_msg.chat.id, kb_msg.message_id)
     await TeacherRaspReqStates.waiting_for_inline_week_day_chose.set()
 
 

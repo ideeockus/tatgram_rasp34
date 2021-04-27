@@ -62,6 +62,10 @@ async def choose_broadcast_target(message: types.Message, state: FSMContext):
     }
     broadcast_target: str = broadcast_target_text if broadcast_target_text.isdigit() \
         else broadcast_target_dict.get(broadcast_target_text)
+    if broadcast_target is None:
+        await message.reply("Не могу распознать цель")
+        return
+
     await state.update_data(broadcast_target=broadcast_target)
     await BroadcastSteps.waiting_for_broadcast_message.set()
     await message.reply("Введите текст или картинку для рассылки", reply_markup=cancel_kb)
@@ -97,12 +101,13 @@ async def choose_broadcast_target(message: types.Message, state: FSMContext):
 #     await user_waiting_for_action_state.set()
 def define_broadcast_targets_set(broadcast_target: str) -> set:
     targets_set = set()
-    if broadcast_target == "all":
-        targets_set = get_all_users()
-    elif broadcast_target.isdigit():
-        targets_set = {int(broadcast_target)}
-    elif broadcast_target in role_by_name.keys():
-        targets_set = get_users_by_role(role_by_name.get(broadcast_target))
+    if broadcast_target is not None:
+        if broadcast_target == "all":
+            targets_set = get_all_users()
+        elif broadcast_target.isdigit():
+            targets_set = {int(broadcast_target)}
+        elif broadcast_target in role_by_name.keys():
+            targets_set = get_users_by_role(role_by_name.get(broadcast_target))
     print(broadcast_target, targets_set)
     return targets_set
 
@@ -114,6 +119,12 @@ async def text_for_broadcast_gotten(message: types.Message, state: FSMContext):
     broadcast_target = (await state.get_data()).get('broadcast_target')
     targets_set = define_broadcast_targets_set(broadcast_target)
     targets_count = len(targets_set)
+
+    if targets_count == 0:
+        await message.answer("В списке для рассылки никого нет")
+        await message.answer("Попробуйте ввести цель для рассылки заново", reply_markup=broadcast_choose_target_kb)
+        await BroadcastSteps.waiting_for_broadcast_target.set()
+        return
 
     bad_targets_count = 0
     text_to_broadcast = abg.md_format(message.md_text)
