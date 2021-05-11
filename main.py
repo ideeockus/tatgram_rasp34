@@ -146,12 +146,14 @@ async def error_handler(update: types.Update, exception: Exception):
 
 
 async def on_aiogram_startup(aiogram_dp: Dispatcher):
-    await quiet_admin_notification("Бот запущен 🤖")
+    # await quiet_admin_notification("Бот запущен 🤖")
+    print("Бот запущен 🤖")
     set_weakly_stats_clear_task(False)
 
 
 async def on_aiogram_shutdown(aiogram_dp: Dispatcher):
     await quiet_admin_notification("Бот отключается. До связи 😵")
+    print("Бот отключается. До связи 😵")
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True, on_startup=on_aiogram_startup, on_shutdown=on_aiogram_shutdown)
