@@ -27,6 +27,22 @@ from bot_storage.Keyboards import choose_role_kb
 #     waiting_for_teacher_name = State()
 #     waiting_for_rasp_file = State()
 
+# TODO сделать валидацию доступа декоратором
+# TODO загрузка базы аккаунтов - предоставляются firstname, lastname, role, sch_identifier. Далее смотреть accounts_db
+# TODO refresh key function
+
+
+def validate_master_command(cmd_description: str):
+    def decorator(func):
+        def wrapper(message: types.Message):
+            print(cmd_description)
+            if not await validate_master(message):
+                return
+            func()
+        return wrapper
+    return decorator
+
+
 async def validate_master(message: types.Message) -> bool:
     user_id = message.from_user.id
     user_name = message.from_user.username

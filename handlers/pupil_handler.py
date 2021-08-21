@@ -19,6 +19,9 @@ from utils.abg import abg_lost_role
 #     waiting_for_registration = State()
 #     waiting_for_other_class_name = State()  # для другого класса
 
+# TODO разделить функционал на common_pupil_handler, headman_handler, parent_handler
+# parent: уведомление о входе / выходе, настройка свободного выхода
+
 
 def get_current_kb(user_id):
     current_role = roles_base.get_role(user_id)

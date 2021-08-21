@@ -10,6 +10,7 @@ from bot_storage import roles_base
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
 from utils.scheduled_tasks import set_weakly_stats_clear_task
 from actions.notify_admins import notify_admins, quiet_admin_notification
+from middlewares.common_middleware import CommonMiddleware
 
 
 @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
@@ -156,4 +157,5 @@ async def on_aiogram_shutdown(aiogram_dp: Dispatcher):
     print("Бот отключается. До связи 😵")
 
 if __name__ == '__main__':
+    dp.middleware.setup(CommonMiddleware())
     executor.start_polling(dp, skip_updates=True, on_startup=on_aiogram_startup, on_shutdown=on_aiogram_shutdown)

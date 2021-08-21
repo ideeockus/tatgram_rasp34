@@ -10,6 +10,10 @@ from libs import Roles
 
 Base = declarative_base()
 
+# TODO rename to accounts_db
+# user_id | username | firstname | lastname | role | identifier | auth_key | supervisor_user_id | reg date
+# auth_key - ключ авторизации для внутренних сервисов. При генерации нового ключа старый затирается во избежание утечек
+
 
 class RoleRecord(Base):
     __tablename__ = "roles_db"
