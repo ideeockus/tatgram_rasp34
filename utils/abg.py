@@ -1,9 +1,6 @@
 import re
 from aiogram.dispatcher import FSMContext
 from aiogram import types
-from bot_storage.UserStates import MainStates
-from bot_storage.Keyboards import choose_role_kb
-# from main import unregistered_msg
 from actions.notify_admins import notify_admins
 from bot_storage.roles_base import get_role, get_class_name, get_teacher_name
 

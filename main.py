@@ -1,70 +1,77 @@
 from aiogram import executor, types, Dispatcher
-from bot_storage.Keyboards import teacher_kb, choose_role_kb, headman_kb
+from bot_storage.Keyboards import teacher_kb, guest_kb, headman_kb
 from aiogram.dispatcher import FSMContext
-from bot_storage.UserStates import MainStates, get_role_waiting_for_action_state
+from bot_storage.UserStates import GuestStates, MainStates, get_role_waiting_for_action_state
 from bot import dp, bot
-from bot_storage.roles_base import get_role
-from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
-from bot_storage.Keyboards import ReplyKeyboardRemove, secret_role_kb
-from bot_storage import roles_base
+from bot_storage.accounts_base import get_role
+from handlers import common_handlers, guest_handlers, teacher_handler, pupil_handler, master_handler
+from bot_storage.Keyboards import ReplyKeyboardRemove, master_kb
+from bot_storage import accounts_base
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
+from bot_storage.accounts_base import Roles
 from utils.scheduled_tasks import set_weakly_stats_clear_task
 from actions.notify_admins import notify_admins, quiet_admin_notification
 from middlewares.common_middleware import CommonMiddleware
 
 
-@dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
-                    state=MainStates.wait_for_role)
-async def choose_role(message: types.Message, state: FSMContext):
-    cur_state = await state.get_state()
-    print(cur_state)
+# @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
+#                     state=MainStates.wait_for_role)
+# async def choose_role(message: types.Message, state: FSMContext):
+#     cur_state = await state.get_state()
+#     print(cur_state)
+#
+#     roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent",
+#                   botmaster_role_phrase: "master", "Староста": "headman"}
+#     role = roles_list[message.text]
+#     user_id = message.from_user.id
+#     if roles_base.get_role(user_id) is None:
+#         username = message.from_user.username
+#         user_fullname = message.from_user.full_name
+#         roles_base.reg_new(user_id, role, username=username, user_fullname=user_fullname)
+#     else:
+#         roles_base.change_role(user_id, role)
+#         roles_base.set_teacher_name(user_id, None)
+#         roles_base.set_class_name(user_id, None)
+#
+#     if role == "pupil" or role == "parent" or role == "headman":
+#         await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
+#         await pupil_handler.PupilStates.waiting_for_registration.set()
+#     elif role == "teacher":
+#         await teacher_handler.TeacherStates.waiting_for_identifier.set()
+#         await message.reply("Введите ваше имя")
+#     elif role == "master":
+#         await master_handler.MasterStates.waiting_for_action.set()
+#         await message.answer("Master role activated", reply_markup=master_kb)
 
-    roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent",
-                  botmaster_role_phrase: "master", "Староста": "headman"}
-    role = roles_list[message.text]
-    user_id = message.from_user.id
-    if roles_base.get_role(user_id) is None:
-        username = message.from_user.username
-        user_fullname = message.from_user.full_name
-        roles_base.reg_new(user_id, role, username=username, user_fullname=user_fullname)
-    else:
-        roles_base.change_role(user_id, role)
-        roles_base.set_teacher_name(user_id, None)
-        roles_base.set_class_name(user_id, None)
 
-    if role == "pupil" or role == "parent" or role == "headman":
-        await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
-        await pupil_handler.PupilStates.waiting_for_registration.set()
-    elif role == "teacher":
-        await teacher_handler.TeacherStates.waiting_for_identifier.set()
-        await message.reply("Введите ваше имя")
-    elif role == "master":
-        await master_handler.MasterStates.waiting_for_action.set()
-        await message.answer("Master role activated", reply_markup=secret_role_kb)
-
-
-@dp.message_handler(state=MainStates.wait_for_role)
-async def choose_role(message: types.Message):
-    await message.answer("Выберите роль с помощью кнопок")
+# @dp.message_handler(state=GuestStates.waiting_for_action)
+# async def choose_option(message: types.Message):
+#
 
 
 @dp.message_handler()
 async def unregistered_msg(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    user_role = roles_base.get_role(user_id)
+    user_role = accounts_base.get_role(user_id)
     print("Unregistered message", user_id, user_role)
     if user_role is None:
-        await message.answer("Ой, я кажется забыл кто вы")
-        await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
-        await MainStates.wait_for_role.set()
+        # await message.answer("Ой, я кажется забыл кто вы")
+        # await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
+        # await MainStates.wait_for_role.set()
+        await message.answer("Выберите опцию", reply_markup=guest_kb)
+        await GuestStates.waiting_for_action.set()
     else:
         await define_action(message, state)
 
 
 async def define_action(message: types.Message, state: FSMContext):
+    """
+    Определить дальнейшее действие по сообщению и роли пользователя
+    (Если вдруг бот перезагрузился посреди диалога)
+    """
     user_id = message.from_user.id
-    user_role = roles_base.get_role(user_id)
-    if user_role == "pupil" or user_role == "parent" or user_role == "headman":
+    user_role = accounts_base.get_role(user_id)
+    if user_role == Roles.pupil or user_role == Roles.parent or user_role == Roles.headman:
         await pupil_handler.PupilStates.waiting_for_action.set()
         if message.text in ["На сегодня", "На завтра"]:
             await pupil_handler.rasp_today_yesterday(message, state)
@@ -78,7 +85,7 @@ async def define_action(message: types.Message, state: FSMContext):
             await pupil_handler.teacher_rasp(message)
         else:
             await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
-    elif user_role == "teacher":
+    elif user_role == Roles.teacher:
         await teacher_handler.TeacherStates.waiting_for_action.set()
         if message.text == "Мое расписание":
             await teacher_handler.rasp(message, state)
@@ -88,10 +95,10 @@ async def define_action(message: types.Message, state: FSMContext):
             await teacher_handler.wanna_send_photo(message)
         else:
             await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
-    elif user_role == "master":
+    elif user_role == Roles.master:
         await master_handler.MasterStates.waiting_for_action.set()
         await message.answer("Здравствуйте. Уведомляю что с момента вашего последнего сообщения бот перезагружался",
-                             reply_markup=secret_role_kb)
+                             reply_markup=master_kb)
         if message.text == "Статистика":
             await master_handler.stats(message)
         elif message.text == "Рассылка":
@@ -104,6 +111,8 @@ async def define_action(message: types.Message, state: FSMContext):
             await master_handler.upload_rasp(message)
         else:
             await message.answer("Команда не распознана")
+    else:
+        await message.answer("Команда не определена")
 
 
 @dp.message_handler(state="*")
@@ -112,8 +121,12 @@ async def other_msg(message: types.Message, state: FSMContext):
     user_state = await state.get_state()
 
     if user_state == get_role_waiting_for_action_state(get_role(message.from_user.id)).state:
-        # base state
-        await message.reply("Не могу определить что мне нужно делать")
+        # for base state
+        print("message ignored")
+        pass
+        # await message.reply("Не могу определить что мне нужно делать")
+        # await message.reply("Throttle rate 2")
+        # await dp.throttle(key="1", rate=2, user_id=message.from_user.id)
     else:
         await message.reply("Сначала завершите предыдущее действие")
 

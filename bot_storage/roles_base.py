@@ -6,7 +6,7 @@ from bot_storage.configuration import postgresql_db_url
 
 from datetime import datetime
 
-from libs import Roles
+from bot_storage.accounts_base import Roles
 
 Base = declarative_base()
 

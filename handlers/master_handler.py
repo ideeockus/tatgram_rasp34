@@ -2,12 +2,12 @@ from aiogram import types
 # from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot_storage.UserStates import MasterStates
 from bot import dp, bot
-from bot_storage import bot_stats
-from bot_storage.roles_base import get_all_users, get_role
+from bot_storage import bot_stats, accounts_base
+# from bot_storage.roles_base import get_all_users, get_role
 # from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 # import asyncio
 # import datetime
-from bot_storage.Keyboards import secret_role_kb, cancel_kb
+from bot_storage.Keyboards import master_kb, cancel_kb
 # from aiogram.types import ParseMode
 from actions import update_global_rasp, broadcast_action
 from actions.pupils_rasp import make_pupil_rasp_request
@@ -16,7 +16,8 @@ from actions.teachers_rasp import make_teacher_rasp_request
 # from actions.notify_admins import notify_admins, notify_admins_photo
 # import time
 from bot_storage import UserStates
-from bot_storage.Keyboards import choose_role_kb
+from bot_storage.Keyboards import guest_kb
+from bot_storage.accounts_base import Roles
 # from bot_storage.configuration import allow_broadcasts
 
 
@@ -30,11 +31,12 @@ from bot_storage.Keyboards import choose_role_kb
 # TODO сделать валидацию доступа декоратором
 # TODO загрузка базы аккаунтов - предоставляются firstname, lastname, role, sch_identifier. Далее смотреть accounts_db
 # TODO refresh key function
+from bot_storage.accounts_base import Roles
 
 
 def validate_master_command(cmd_description: str):
     def decorator(func):
-        def wrapper(message: types.Message):
+        async def wrapper(message: types.Message):
             print(cmd_description)
             if not await validate_master(message):
                 return
@@ -47,24 +49,24 @@ async def validate_master(message: types.Message) -> bool:
     user_id = message.from_user.id
     user_name = message.from_user.username
     user_full_name = message.from_user.full_name
-    if get_role(user_id) == "master":
+    if accounts_base.get_role(user_id) == Roles.master:
         print(f"master role validated for user {user_name}[{user_id}] ({user_full_name})")
         return True
     else:
         print(f"master role for user {user_name}[{user_id}] ({user_full_name}) NOT VALIDATED")
-        await message.answer("Выберие свою роль", reply_markup=choose_role_kb)
-        await UserStates.MainStates.wait_for_role.set()
+        await message.answer("Выберие свою роль", reply_markup=guest_kb)
+        await UserStates.GuestStates.waiting_for_action.set()
         return False
 
 
-@dp.message_handler(lambda m: m.text == "Отмена", state=MasterStates.all_states)  # waiting_for_text_to_broadcast
-async def cancel(message: types.Message):
-    print("cancellation by master")
-    if not await validate_master(message):
-        return
-
-    await message.answer("Отменено", reply_markup=secret_role_kb)
-    await MasterStates.waiting_for_action.set()
+# @dp.message_handler(lambda m: m.text == "Отмена", state=MasterStates.all_states)  # waiting_for_text_to_broadcast
+# async def cancel(message: types.Message):
+#     print("cancellation by master")
+#     if not await validate_master(message):
+#         return
+#
+#     await message.answer("Отменено", reply_markup=master_kb)
+#     await MasterStates.waiting_for_action.set()
 
 
 @dp.message_handler(lambda m: any(word in m.text for word in ["Статистика", "стат", "Стат", "stat"]),
@@ -140,7 +142,7 @@ async def teachers_rasp(message: types.Message):
 #     # print(message.as_json())
 #     # print(abg.md_format(message.md_text))
 #     await MasterStates.waiting_for_action.set()
-#     await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=secret_role_kb)
+#     await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=master_kb)
 #
 #     if not allow_broadcasts:
 #         broadcast_from_text = f"От пользователя {message.from_user.username}[{message.from_user.id}]\n" \
@@ -202,7 +204,7 @@ async def teachers_rasp(message: types.Message):
 #     bad_users_count = 0
 #     photo_to_broadcast = message.photo[-1].file_id
 #     await MasterStates.waiting_for_action.set()
-#     await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=secret_role_kb)
+#     await message.answer(f"Рассылаю {users_count} пользователям", reply_markup=master_kb)
 #
 #     if not allow_broadcasts:
 #         broadcast_from_text = f"От пользователя {message.from_user.username}[{message.from_user.id}]\n" \

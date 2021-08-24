@@ -13,10 +13,12 @@ from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserD
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import cancel_kb, broadcast_choose_target_kb
-from libs import Roles, role_by_name
-from utils import other, abg
+from bot_storage.accounts_base import Roles, role_by_name
+import utils
+# from utils import other, abg
 from utils.abg import md_shielding
-from bot_storage.roles_base import get_role, get_all_users, get_users_by_role
+# from bot_storage.roles_base import get_role, get_all_users, get_users_by_role
+from bot_storage.accounts_base import get_role, get_users_set
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
 
@@ -103,11 +105,11 @@ def define_broadcast_targets_set(broadcast_target: str) -> set:
     targets_set = set()
     if broadcast_target is not None:
         if broadcast_target == "all":
-            targets_set = get_all_users()
+            targets_set = get_users_set()
         elif broadcast_target.isdigit():
             targets_set = {int(broadcast_target)}
         elif broadcast_target in role_by_name.keys():
-            targets_set = get_users_by_role(role_by_name.get(broadcast_target))
+            targets_set = get_users_set(role_by_name.get(broadcast_target))
     print(broadcast_target, targets_set)
     return targets_set
 
@@ -127,7 +129,7 @@ async def text_for_broadcast_gotten(message: types.Message, state: FSMContext):
         return
 
     bad_targets_count = 0
-    text_to_broadcast = abg.md_format(message.md_text)
+    text_to_broadcast = utils.abg.md_format(message.md_text)
     print(f"Текстовая рассылка target = {broadcast_target}")
     print(text_to_broadcast)
     # print(message.text)
@@ -149,7 +151,7 @@ async def text_for_broadcast_gotten(message: types.Message, state: FSMContext):
 
     progress_percents = 0
     progress_message: types.Message = await message.answer(
-        f"Рассылка: {other.progress_bar(progress_percents)} (0/{targets_count})")
+        f"Рассылка: {utils.progress_bar(progress_percents)} (0/{targets_count})")
 
     for (index, user_id) in enumerate(targets_set):
         try:
@@ -160,7 +162,7 @@ async def text_for_broadcast_gotten(message: types.Message, state: FSMContext):
             pass
 
         except BotBlocked:
-            print(f"Targetu [ID:{user_id}]: blocked by user")
+            print(f"Target [ID:{user_id}]: blocked by user")
             bad_targets_count += 1
         except ChatNotFound:
             print(f"Target [ID:{user_id}]: invalid user ID")
@@ -178,7 +180,7 @@ async def text_for_broadcast_gotten(message: types.Message, state: FSMContext):
         finally:
             progress_percents = int(round((index + 1) / targets_count, 2) * 100)
             await progress_message.edit_text(
-                f"Рассылка: {other.progress_bar(progress_percents)} ({index + 1}/{targets_count})")
+                f"Рассылка: {utils.progress_bar(progress_percents)} ({index + 1}/{targets_count})")
     broadcast_length_time = (datetime.now() - broadcast_start_time).seconds
     print(broadcast_length_time, "секунд заняла рассылка. Рассылка окончена")
     await message.reply(
@@ -213,7 +215,7 @@ async def photo_for_broadcast_gotten(message: types.Message, state: FSMContext):
 
     progress_percents = 0
     progress_message: types.Message = await message.answer(
-        f"Рассылка: {other.progress_bar(progress_percents)} (0/{targets_count})")
+        f"Рассылка: {utils.progress_bar(progress_percents)} (0/{targets_count})")
     for (index, user_id) in enumerate(targets_set):
         try:
             pass
@@ -228,7 +230,7 @@ async def photo_for_broadcast_gotten(message: types.Message, state: FSMContext):
         finally:
             progress_percents = int(round((index + 1) / targets_count, 2) * 100)
             await progress_message.edit_text(
-                f"Рассылка: {other.progress_bar(progress_percents)} ({index + 1}/{targets_count})")
+                f"Рассылка: {utils.progress_bar(progress_percents)} ({index + 1}/{targets_count})")
 
     broadcast_length_time = (datetime.now() - broadcast_start_time).seconds
     print(broadcast_length_time, "секунд заняла рассылка. Рассылка окончена")

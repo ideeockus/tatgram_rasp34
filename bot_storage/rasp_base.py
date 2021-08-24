@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from bot_storage.configuration import postgresql_db_url
 from aiogram.utils.markdown import bold, code, italic, text
 
-from libs import Roles
+from bot_storage.accounts_base import Roles
 from utils.abg import md_format
 
 from bot_storage.bot_stats import edit_stat, inc_req_stat_by_class

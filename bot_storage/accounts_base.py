@@ -1,14 +1,17 @@
 from typing import List, Set, Optional
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, ForeignKey
+# from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from bot_storage import bot_stats
+from sqlalchemy.orm import sessionmaker, relationship
+
+import utils
+from bot_storage import bot_stats, configuration
 from bot_storage.configuration import postgresql_db_url
 
 from datetime import datetime
 
-from libs import Roles, role_by_name
+# from libs import Roles, role_by_name
 
 Base = declarative_base()
 
@@ -17,6 +20,32 @@ Base = declarative_base()
 # user_id | username | firstname | lastname | role | sch_identifier | auth_key | supervisor_user_id | reg date
 # auth_key - ключ авторизации для внутренних сервисов. При генерации нового ключа старый затирается во избежание утечек
 
+from enum import Enum
+
+
+class Roles(Enum):
+    teacher = "Учитель"
+    pupil = "Ученик"
+    headman = "Староста"
+    parent = "Родитель"
+    master = "Админ"
+    guest = "Гость"
+
+
+role_by_name = {
+    'teacher': Roles.teacher,
+    'pupil': Roles.pupil,
+    'headman': Roles.headman,
+    'parent': Roles.parent,
+    'master': Roles.master
+}
+
+
+user_supervisor_relationship = Table(
+    "user_supervisor_relationship", Base.metadata,
+    Column("supervisor_id", ForeignKey("accounts_db.user_id"), primary_key=True),
+    Column("controlled_user_id", ForeignKey("accounts_db.user_id"), primary_key=True)
+)
 
 class Account(Base):
     __tablename__ = "accounts_db"
@@ -27,8 +56,14 @@ class Account(Base):
     lastname = Column(String)
     role = Column(String)
     sch_identifier = Column(String)  # для школьников тут будет название класса
-    auth_key = Column(String)
-    supervisor_user_id = Column(String)
+    auth_key = Column(String, unique=True)
+    # supervisor_user_ids = Column(postgresql.ARRAY(String))  # list of supervisors of user
+    supervisor_user_ids = relationship(
+        "Account", secondary=user_supervisor_relationship,
+        primaryjoin=(user_supervisor_relationship.c.controlled_user_id == user_id),
+        secondaryjoin=(user_supervisor_relationship.c.supervisor_id == user_id)
+    )  # list of supervisors of user
+
     # class_name = Column(String)  # имя класса
     # teacher_name = Column(String)  # имя учителя
     # user_fullname = Column(String)
@@ -64,7 +99,41 @@ Session = sessionmaker(bind=engine)
 #
 #     bot_stats.new_user(role)  # учет статистики
 
-def authorize_user(auth_key: str, user_id: str, username: str = None) -> bool:
+def reg_user(user_id: str, role: Roles, username: str,
+             firstname: str, lastname: str, sch_identifier: str = None) -> Optional[Account]:
+    accounts_db_session = Session()
+    print(f"Регистрация пользователя {username}[{user_id}] как {role}")
+
+    # user_id = str(user_id)
+    user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
+    # user_roles = []
+    # for user_record in user_records:
+    #     user_roles.append(user_record.role)
+    # if (user.role if user is not None else None) is not None:
+    if user is not None:
+        print(f"Пользователь {username}[{user_id}] уже зарегестрирован как {user.role}. Аккаунт будет удален")
+        accounts_db_session.delete(user)
+        accounts_db_session.commit()
+
+    new_user_account = Account(
+        user_id=user_id,
+        username=username,
+        firstname=firstname,
+        lastname=lastname,
+        role=role.name,
+        sch_identifier=sch_identifier,
+        auth_key=utils.gen_random_string(configuration.auth_key_default_length),
+        registration_date=datetime.now()
+    )
+    accounts_db_session.add(new_user_account)
+    accounts_db_session.commit()
+    accounts_db_session.close()
+
+    bot_stats.new_user(role.name)
+    return new_user_account
+
+
+def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Account]:
     """
     Авторизовать пользователя
     @return реузльтат авторизации
@@ -74,8 +143,8 @@ def authorize_user(auth_key: str, user_id: str, username: str = None) -> bool:
 
     user: Account = accounts_db_session.query(Account).filter(Account.auth_key == auth_key).scalar()
     print(type(user))
-    if user.user_id is not None and user.user_id != user_id:
-        return False
+    if (user is None) or (user.user_id is not None and user.user_id != user_id):
+        return None
 
     # user_roles = []
     # for user_record in user_records:
@@ -109,7 +178,61 @@ def authorize_user(auth_key: str, user_id: str, username: str = None) -> bool:
     accounts_db_session.close()
 
     bot_stats.new_user(user.role)  ## remove later
+    return user
+
+
+def set_user_supervisor(user_id: str, supervisor_user_id: str) -> bool:
+    """
+    Add supervisor to supervisor_ids of account
+    """
+    accounts_db_session = Session()
+    print(f"Установка {supervisor_user_id} как родитель для {user_id}")
+
+    supervisor_user: Account = accounts_db_session.query(Account).filter(Account.user_id == supervisor_user_id).scalar()
+    user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
+    if user is None:
+        return False
+
+    print("supervisor ids", user.supervisor_user_ids)
+    user.supervisor_user_ids.append(supervisor_user)
+
+    accounts_db_session.commit()
+    accounts_db_session.close()
     return True
+
+
+
+# def reg_supervisor(controlled_auth_key: str, user_id: str, role: Roles, username: str,
+#                    firstname: str, lastname: str) -> Optional[Account]:
+#     """
+#     Reg supervisor
+#     """
+#     accounts_db_session = Session()
+#     print(f"Регистрация пользователя {username}[{user_id}] как {role}")
+#
+#     # user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
+#     # if user is not None:
+#     #     print(f"Пользователь {username}[{user_id}] уже зарегестрирован как {user.role}. Аккаунт будет удален")
+#     #     accounts_db_session.delete(user)
+#     #
+#     # new_user_account = Account(
+#     #     user_id=user_id,
+#     #     username=username,
+#     #     firstname=firstname,
+#     #     lastname=lastname,
+#     #     role=role.name,
+#     #     registration_date=datetime.now()
+#     # )
+#     # accounts_db_session.add(new_user_account)
+#
+#     controlled_user = accounts_db_session.query(Account).filter(Account.auth_key == controlled_auth_key).scalar()
+#     if controlled_user is None:
+#
+#     accounts_db_session.commit()
+#     accounts_db_session.close()
+#
+#     bot_stats.new_user(role.name)
+#     return new_user_account
 
 
 # def reg_class(user_id, class_name):
@@ -292,3 +415,11 @@ def get_users_set(role: Roles = None) -> Set[Account]:
 
     accounts_db_session.close()
     return user_id_set
+
+def get_user_by_auth_key(auth_key: str) -> Optional[Account]:
+    accounts_db_session = Session()
+
+    user = accounts_db_session.query(Account).filter(Account.auth_key == auth_key).scalar()
+    accounts_db_session.close()
+
+    return user

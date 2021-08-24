@@ -6,7 +6,7 @@ from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterd
 from bot_storage.rasp_base import get_all_classes
 from bot import dp
 from bot_storage.Keyboards import pupil_kb, headman_kb
-from bot_storage import roles_base
+from bot_storage import roles_base, accounts_base
 from aiogram.types import ParseMode
 from actions import pupils_rasp, teachers_rasp, feedback
 from utils.abg import abg_lost_role
@@ -24,7 +24,7 @@ from utils.abg import abg_lost_role
 
 
 def get_current_kb(user_id):
-    current_role = roles_base.get_role(user_id)
+    current_role = accounts_base.get_role(user_id)
     current_kb = pupil_kb
     if current_role == "pupil":
         current_kb = pupil_kb
@@ -48,7 +48,8 @@ async def reg_class(message: types.Message):
         await message.answer("Не могу найти такого класса, введите еще раз")
 
 
-@dp.message_handler(lambda m: m.text in ["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
+# @dp.message_handler(lambda m: m.text in ["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
+@dp.message_handler(text=["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
 async def rasp_today_yesterday(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     role = roles_base.get_role(user_id)
@@ -72,7 +73,7 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
         await PupilStates.waiting_for_registration.set()
 
 
-@dp.message_handler(lambda m: m.text == "По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
+@dp.message_handler(text="По дням", state=PupilStates.waiting_for_action, content_types=types.ContentType.TEXT)
 async def rasp_by_day(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     class_name = roles_base.get_class_name(user_id)
