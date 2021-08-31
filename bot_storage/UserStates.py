@@ -13,20 +13,28 @@ class GuestStates(StatesGroup):
 
 
 class PupilStates(StatesGroup):
-    waiting_for_class_name = State()  # ожидание номера класса
+    # waiting_for_class_name = State()  # ожидание номера класса
     waiting_for_action = State()  # ожидание действий
-    waiting_for_identifier = State()  # ждет название класса
-    waiting_for_registration = State()  # ждет название класса
-    waiting_for_other_class_name = State()  # для другого класса
+    # waiting_for_identifier = State()  # ждет название класса
+    # waiting_for_registration = State()  # ждет название класса
+    waiting_for_other_class_name = State()  # для другого класса (при запросе расписания)
+
+
+# class ParentStates(StatesGroup): # на данном этапе отдельный стейты не нужны
+#     waiting_for_class_name = State()  # ожидание номера класса
+#     waiting_for_action = State()  # ожидание действий
+#     waiting_for_identifier = State()  # ждет название класса
+#     waiting_for_registration = State()  # ждет название класса
+#     waiting_for_other_class_name = State()  # для другого класса
 
 
 class TeacherStates(StatesGroup):
-    rasp_today = State()  # расписание на сегодня
-    rasp_yesterday = State()  # расписание на завтра
+    # rasp_today = State()  # расписание на сегодня
+    # rasp_yesterday = State()  # расписание на завтра
     waiting_for_action = State()  # ожидание действий
-    waiting_for_identifier = State()  # ждет имя
+    # waiting_for_identifier = State()  # ждет имя
     waiting_for_photo = State()
-    waiting_for_teacher_name = State()  # ждет имя учителя
+    waiting_for_teacher_name = State()  # ждет имя учителя (при запросе расписания)
 
 
 class MasterStates(StatesGroup):
@@ -42,6 +50,8 @@ class MasterStates(StatesGroup):
 
 def get_role_waiting_for_action_state(role: Roles):
     if role == Roles.pupil or role == Roles.headman:
+        waiting_for_action_state = PupilStates.waiting_for_action
+    elif role == Roles.parent:  # возможно кнопки для этой роли будут отличаться от pupil
         waiting_for_action_state = PupilStates.waiting_for_action
     elif role == Roles.teacher:
         waiting_for_action_state = TeacherStates.waiting_for_action

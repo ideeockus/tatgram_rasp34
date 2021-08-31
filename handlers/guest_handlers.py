@@ -10,7 +10,7 @@ from bot_storage import accounts_base
 from bot_storage.accounts_base import Roles
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
 from utils.scheduled_tasks import set_weakly_stats_clear_task
-from actions.notify_admins import notify_admins, quiet_admin_notification
+from actions.notify_actions import notify_admins, quiet_admin_notification
 from middlewares.common_middleware import CommonMiddleware
 
 
@@ -38,6 +38,7 @@ async def guest_action(message: types.Message):
         print(f"Master {username}[{user_id}] registration successful")
         await get_role_waiting_for_action_state(Roles.master).set()
         await message.reply(f"Вы успешно зарегестрированы как {Roles.master}", reply_markup=master_kb)
+        await message.answer(f"Ваш ключ: {user_account.auth_key}")
     else:
         await message.answer("Выберите опцию с помощью кнопок")
 
@@ -99,13 +100,14 @@ async def reg_supervisor(message: types.Message):
         return
 
     if controlled_user.user_id == user_id:
-        await message.answer("К сожалению, так не получится")
+        await message.answer("Вы ввели свой ключ. К сожалению, так не получится")
         return
 
-    if controlled_user.user_id is None:
-        await message.answer("Этот пользователь еще не вошел в систему. \n\n Отклонено")
-        return
+    # if controlled_user.user_id is None:
+    #     await message.answer("Этот пользователь еще не вошел в систему. \n\n Отклонено")
+    #     return
 
+    # reg new user account
     user_account = accounts_base.reg_user(user_id, Roles.parent, username, user_firstname, user_lastname)
 
     if user_account is None:
@@ -121,6 +123,7 @@ async def reg_supervisor(message: types.Message):
     user_default_kb = get_role_keyboard(user_role)
     await get_role_waiting_for_action_state(user_role).set()
     await message.reply(f"Вы успешно зарегестрированы как {user_role}", reply_markup=user_default_kb)
+    await message.answer(f"Ваш ключ: {user_account.auth_key}")
 
     # roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent",
     #               botmaster_role_phrase: "master", "Староста": "headman"}

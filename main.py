@@ -1,17 +1,17 @@
 from aiogram import executor, types, Dispatcher
-from bot_storage.Keyboards import teacher_kb, guest_kb, headman_kb
+from bot_storage.Keyboards import guest_kb
 from aiogram.dispatcher import FSMContext
-from bot_storage.UserStates import GuestStates, MainStates, get_role_waiting_for_action_state
+from bot_storage.UserStates import GuestStates, get_role_waiting_for_action_state
 from bot import dp, bot
 from bot_storage.accounts_base import get_role
-from handlers import common_handlers, guest_handlers, teacher_handler, pupil_handler, master_handler
-from bot_storage.Keyboards import ReplyKeyboardRemove, master_kb
+from handlers import common_handlers, guest_handlers, teacher_handler, pupil_handler, master_handler  # handlers
 from bot_storage import accounts_base
-from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
+from bot_storage.configuration import feedback_tg_id, creator_id
 from bot_storage.accounts_base import Roles
 from utils.scheduled_tasks import set_weakly_stats_clear_task
-from actions.notify_admins import notify_admins, quiet_admin_notification
+from actions.notify_actions import quiet_admin_notification
 from middlewares.common_middleware import CommonMiddleware
+from bot_storage import Keyboards
 
 
 # @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
@@ -53,7 +53,7 @@ from middlewares.common_middleware import CommonMiddleware
 async def unregistered_msg(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_role = accounts_base.get_role(user_id)
-    print("Unregistered message", user_id, user_role)
+    print(" - unregistered message", user_id, user_role)
     if user_role is None:
         # await message.answer("Ой, я кажется забыл кто вы")
         # await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
@@ -69,7 +69,7 @@ async def define_action(message: types.Message, state: FSMContext):
     Определить дальнейшее действие по сообщению и роли пользователя
     (Если вдруг бот перезагрузился посреди диалога)
     """
-    user_id = message.from_user.id
+    user_id = str(message.from_user.id)
     user_role = accounts_base.get_role(user_id)
     if user_role == Roles.pupil or user_role == Roles.parent or user_role == Roles.headman:
         await pupil_handler.PupilStates.waiting_for_action.set()
@@ -84,7 +84,7 @@ async def define_action(message: types.Message, state: FSMContext):
         elif message.text == "Расписание учителей":
             await pupil_handler.teacher_rasp(message)
         else:
-            await message.answer("Здравствуйте", reply_markup=pupil_handler.pupil_kb)
+            await message.answer("Здравствуйте", reply_markup=Keyboards.pupil_kb)
     elif user_role == Roles.teacher:
         await teacher_handler.TeacherStates.waiting_for_action.set()
         if message.text == "Мое расписание":
@@ -94,11 +94,11 @@ async def define_action(message: types.Message, state: FSMContext):
         elif message.text == "Отправить фото":
             await teacher_handler.wanna_send_photo(message)
         else:
-            await message.answer("Здравствуйте", reply_markup=teacher_handler.teacher_kb)
+            await message.answer("Здравствуйте", reply_markup=Keyboards.teacher_kb)
     elif user_role == Roles.master:
         await master_handler.MasterStates.waiting_for_action.set()
         await message.answer("Здравствуйте. Уведомляю что с момента вашего последнего сообщения бот перезагружался",
-                             reply_markup=master_kb)
+                             reply_markup=Keyboards.master_kb)
         if message.text == "Статистика":
             await master_handler.stats(message)
         elif message.text == "Рассылка":

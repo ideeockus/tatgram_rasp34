@@ -1,3 +1,5 @@
+from bot_storage import configuration
+
 import string
 import random
 
@@ -8,6 +10,6 @@ def progress_bar(percents: int, bar_max_width=10) -> str:
     return "[" + '#'*filled_part + '  '*empty_part + "]"
 
 
-def gen_random_string(length: int) -> str:
+def gen_random_string(length: int = configuration.auth_key_default_length) -> str:
     chars = string.ascii_letters + string.digits
     return "".join(random.choices(chars, k=length))

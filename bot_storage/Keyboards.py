@@ -117,6 +117,8 @@ def get_role_keyboard(role: Roles):
         role_keyboard = pupil_kb
     elif role == Roles.headman:
         role_keyboard = headman_kb
+    elif role == Roles.parent:
+        role_keyboard = pupil_kb
     elif role == Roles.teacher:
         role_keyboard = teacher_kb
     elif role == Roles.master:

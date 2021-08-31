@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from bot_storage import bot_stats
-from bot_storage.configuration import postgresql_db_url
+from bot_storage.configuration import db_url
 
 from datetime import datetime
 
@@ -28,11 +28,11 @@ class RoleRecord(Base):
     registration_date = Column(DateTime)
 
 
-postgres_db = postgresql_db_url
+postgres_db = db_url
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
-# roles_db_session = Session()
+# roles_db_session = DbSession()
 
 
 def reg_new(user_id, role, username="", user_fullname=""):
