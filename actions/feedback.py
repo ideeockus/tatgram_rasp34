@@ -41,6 +41,7 @@ async def make_feedback():
 
 @dp.message_handler(state=FeedbackSteps.waiting_for_feedback_text, content_types=types.ContentType.TEXT)
 async def feedback_text_gotten(message: types.Message, state: FSMContext):
+    print("Feedback action")
     feedback_text = message.text
     user_id = message.from_user.id
     user_full_name = message.from_user.full_name

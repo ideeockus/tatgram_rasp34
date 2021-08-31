@@ -13,7 +13,7 @@ from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserD
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import cancel_kb, broadcast_choose_target_kb
-from bot_storage.accounts_base import Roles, role_by_name
+from bot_storage.accounts_base import Roles
 import utils
 # from utils import other, abg
 from utils.abg import md_shielding
@@ -108,8 +108,9 @@ def define_broadcast_targets_set(broadcast_target: str) -> set:
             targets_set = get_users_set()
         elif broadcast_target.isdigit():
             targets_set = {int(broadcast_target)}
-        elif broadcast_target in role_by_name.keys():
-            targets_set = get_users_set(role_by_name.get(broadcast_target))
+        elif broadcast_target in [role.name for role in Roles]:
+            # targets_set = get_users_set(role_by_name.get(broadcast_target))
+            targets_set = get_users_set(Roles(broadcast_target))
     print(broadcast_target, targets_set)
     return targets_set
 

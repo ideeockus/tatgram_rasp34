@@ -36,6 +36,9 @@ class MasterStates(StatesGroup):
     waiting_for_teacher_name = State()
     waiting_for_rasp_file = State()
 
+    waiting_for_accounts_base = State()
+    waiting_for_accounts_base_confirm = State()
+
 
 def get_role_waiting_for_action_state(role: Roles):
     if role == Roles.pupil or role == Roles.headman:

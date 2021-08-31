@@ -7,7 +7,7 @@ from bot import dp, bot
 from handlers import common_handlers, teacher_handler, pupil_handler, master_handler
 from bot_storage.Keyboards import ReplyKeyboardRemove, master_kb
 from bot_storage import accounts_base
-from bot_storage.accounts_base import Roles, role_by_name
+from bot_storage.accounts_base import Roles
 from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
 from utils.scheduled_tasks import set_weakly_stats_clear_task
 from actions.notify_admins import notify_admins, quiet_admin_notification
@@ -56,7 +56,7 @@ async def enter_auth_key(message: types.Message):
         return
 
     print(f"User {username}[{user_id}] successful authorized")
-    user_role = role_by_name.get(user_account.role)
+    user_role = user_account.role
     user_default_kb = get_role_keyboard(user_role)
     await get_role_waiting_for_action_state(user_role).set()
     await message.reply(f"Вы успешно авторизованы как {user_account.firstname}", reply_markup=user_default_kb)
@@ -117,7 +117,7 @@ async def reg_supervisor(message: types.Message):
 
     accounts_base.set_user_supervisor(controlled_user.user_id, user_account.user_id)
 
-    user_role = role_by_name.get(user_account.role)
+    user_role = user_account.role
     user_default_kb = get_role_keyboard(user_role)
     await get_role_waiting_for_action_state(user_role).set()
     await message.reply(f"Вы успешно зарегестрированы как {user_role}", reply_markup=user_default_kb)

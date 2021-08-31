@@ -1,6 +1,7 @@
 from typing import List, Set, Optional
 
 from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Enum as sqlalchemyEnum
 # from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -32,13 +33,13 @@ class Roles(Enum):
     guest = "Гость"
 
 
-role_by_name = {
-    'teacher': Roles.teacher,
-    'pupil': Roles.pupil,
-    'headman': Roles.headman,
-    'parent': Roles.parent,
-    'master': Roles.master
-}
+# role_by_name = {
+#     'teacher': Roles.teacher,
+#     'pupil': Roles.pupil,
+#     'headman': Roles.headman,
+#     'parent': Roles.parent,
+#     'master': Roles.master
+# }
 
 
 user_supervisor_relationship = Table(
@@ -47,14 +48,44 @@ user_supervisor_relationship = Table(
     Column("controlled_user_id", ForeignKey("accounts_db.user_id"), primary_key=True)
 )
 
+# class Account:
+#     __slots__ = ('account_id', 'user_id', 'username',
+#                  'firstname', 'lastname', 'role',
+#                  'sch_identifier', 'auth_key', 'supervisor_user_ids')
+#
+#     def __init__(self, account_id, user_id, username,
+#                  firstname, lastname, role,
+#                  sch_identifier, auth_key, supervisor_user_ids):
+#         id = Column(Integer, primary_key=True)
+#         user_id = Column(String)
+#         username = Column(String)
+#         firstname = Column(String)
+#         lastname = Column(String)
+#         role = Column(Roles)
+#         sch_identifier = Column(String)  # для школьников тут будет название класса
+#         auth_key = Column(String, unique=True)
+#         # supervisor_user_ids = Column(postgresql.ARRAY(String))  # list of supervisors of user
+#         supervisor_user_ids = relationship(
+#             "Account", secondary=user_supervisor_relationship,
+#             primaryjoin=(user_supervisor_relationship.c.controlled_user_id == user_id),
+#             secondaryjoin=(user_supervisor_relationship.c.supervisor_id == user_id)
+#         )  # list of supervisors of user
+#
+#         # class_name = Column(String)  # имя класса
+#         # teacher_name = Column(String)  # имя учителя
+#         # user_fullname = Column(String)
+#         registration_date = Column(DateTime)
+
+
 class Account(Base):
     __tablename__ = "accounts_db"
     # id = Column(Integer)
-    user_id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String)
     username = Column(String)
     firstname = Column(String)
     lastname = Column(String)
-    role = Column(String)
+    role = Column(sqlalchemyEnum(Roles))
     sch_identifier = Column(String)  # для школьников тут будет название класса
     auth_key = Column(String, unique=True)
     # supervisor_user_ids = Column(postgresql.ARRAY(String))  # list of supervisors of user
@@ -73,7 +104,7 @@ class Account(Base):
 postgres_db = postgresql_db_url
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, expire_on_commit=False)
 
 
 # roles_db_session = Session()
@@ -141,7 +172,7 @@ def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Accou
     accounts_db_session = Session()
     print(f"Авторизация пользователя {user_id} ...")
 
-    user: Account = accounts_db_session.query(Account).filter(Account.auth_key == auth_key).scalar()
+    user: Account = accounts_db_session.query(Account).filter(Account.auth_key == auth_key.strip()).scalar()
     print(type(user))
     if (user is None) or (user.user_id is not None and user.user_id != user_id):
         return None
@@ -173,11 +204,14 @@ def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Accou
     # user_id=user_id, role=role, username=username,
     # user_fullname=user_fullname, registration_date=datetime.now())
     # accounts_db_session.add(role_db_record)
+    user_role = user.role
+    # user_copy = user.__dict__
+    # pass
 
     accounts_db_session.commit()
     accounts_db_session.close()
 
-    bot_stats.new_user(user.role)  ## remove later
+    bot_stats.new_user(user_role.name)  ## remove later
     return user
 
 
@@ -338,7 +372,7 @@ def get_role(user_id: str) -> Optional[Roles]:
     # if len(user_roles) == 0:
     #     return None
     # user_role = user_roles[0]
-    return role_by_name.get(user.role)
+    return user.role
 
 
 def get_sch_identifier(user_id) -> str:

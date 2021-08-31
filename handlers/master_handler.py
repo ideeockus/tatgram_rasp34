@@ -248,3 +248,13 @@ async def upload_rasp(message: types.Message):
 
     await message.answer("Пришлите мне xlsx файл с расписанием", reply_markup=cancel_kb)
     await update_global_rasp.make_global_rasp_update()
+
+
+@dp.message_handler(lambda m: m.text == "Загрузить базу аккаунтов", state=MasterStates.waiting_for_action)
+async def upload_rasp(message: types.Message):
+    print("master upload new rasp_table")
+    if not await validate_master(message):
+        return
+
+    await message.answer("Пришлите мне xlsx файл с расписанием", reply_markup=cancel_kb)
+    await update_global_rasp.make_global_rasp_update()
