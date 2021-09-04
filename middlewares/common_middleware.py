@@ -8,7 +8,6 @@ from bot_storage.accounts_base import Roles
 
 
 class CommonMiddleware(BaseMiddleware):
-
     async def on_process_message(self, message: types.Message, data: dict):
         user_id = message.from_user.id
         username = message.from_user.username

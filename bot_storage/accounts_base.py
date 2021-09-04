@@ -1,4 +1,4 @@
-from typing import Set, Optional
+from typing import Set, Optional, List
 from sqlalchemy.orm import sessionmaker
 from bot_storage import bot_stats
 from bot_storage import Roles, Account, engine
@@ -38,6 +38,12 @@ def unlink_account(user_id: str):
     accounts_db_session = DbSession()
     user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
     user.user_id = None
+
+    # список контролируемых пользователей
+    # controlled_users: List[Account] = accounts_db_session.query(Account).filter(user in Account.supervisor_user_ids).all()
+    # print("controlled_users type", controlled_users)
+    # for controlled_user in controlled_users:
+    #     controlled_user.supervisor_user_ids.remove(user)
     # user.username = None
     # user.registration_date = None
     accounts_db_session.commit()
@@ -66,7 +72,7 @@ def reg_user(user_id: str, role: Roles, username: str,
         username=username,
         firstname=firstname,
         lastname=lastname,
-        role=role.name,
+        role=role,
         sch_identifier=sch_identifier,
         auth_key=gen_uniq_auth_key(),
         registration_date=datetime.now()
@@ -121,6 +127,26 @@ def set_user_supervisor(user_id: str, supervisor_user_id: str) -> bool:
     accounts_db_session.commit()
     accounts_db_session.close()
     return True
+
+
+# def set_user_supervisor_by_auth_key(controlled_user_auth_key: str, supervisor_user_id: str) -> bool:
+#     """
+#     Add supervisor to supervisor_ids of account by auth_key
+#     """
+#     accounts_db_session = DbSession()
+#     print(f"Установка {supervisor_user_id} как родитель для {controlled_user_auth_key}")
+#
+#     supervisor_user: Account = accounts_db_session.query(Account).filter(Account.user_id == supervisor_user_id).scalar()
+#     user: Account = accounts_db_session.query(Account).filter(Account.auth_key == controlled_user_auth_key).scalar()
+#     if user is None:
+#         return False
+#
+#     print("supervisor ids", user.supervisor_user_ids)
+#     user.supervisor_user_ids.append(supervisor_user)
+#
+#     accounts_db_session.commit()
+#     accounts_db_session.close()
+#     return True
 
 
 
@@ -342,10 +368,13 @@ def get_users_set(role: Roles = None) -> Set[Account]:
         else accounts_db_session.query(Account).filter(Account.role == role.name).all()
 
     for user in users:
+        if user.user_id is None:
+            continue
         user_id_set.add(user.user_id)
 
     accounts_db_session.close()
     return user_id_set
+
 
 def get_user_by_auth_key(auth_key: str) -> Optional[Account]:
     accounts_db_session = DbSession()

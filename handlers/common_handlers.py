@@ -20,10 +20,8 @@ async def start(message: types.Message, state: FSMContext):
     if check_account_existence(user_id):
         print(f"Аккаунт пользователя {username}[{user_id}] будет откреплен")
         unlink_account(user_id)
-        # accounts_db_session.delete(user)
-        # accounts_db_session.commit()
 
-    await message.answer("Здравствуйте.\nВыберите опцию", reply_markup=guest_kb)
+    await message.answer("Здравствуйте!\nВыберите опцию", reply_markup=guest_kb)
     await GuestStates.waiting_for_action.set()
 
 

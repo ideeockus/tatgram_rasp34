@@ -31,10 +31,10 @@ async def feedback_text_gotten(message: types.Message, state: FSMContext):
     user_keyboard = get_role_keyboard(user_role)
     feedback_msg = text(bold(f"Сообщение от @{user_username} id: {user_id}\n"),
                         code(f"{user_full_name}\n"),
-                        italic(f"роль: {escape_md(user_role)}\n\n"),  # не добавлять в роль _ (будет конфликт с italic)
+                        italic(f"роль: {user_role.value}\n\n"),  # не добавлять в роль _ (будет конфликт с italic)
                         # md_shielding(str(feedback_text))
                         # escape_md(str(feedback_text))
-                        feedback_text
+                        escape_md(feedback_text)
                         )
     print(feedback_msg)
     try:

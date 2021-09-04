@@ -3,9 +3,23 @@ from enum import Enum
 from bot_storage import engine, Stat
 
 # TODO переработать статистику, оптимизировать запросы
-
 Session = sessionmaker(bind=engine)
 
+
+class StatisticField(Enum):
+    messages_per_day = "Всего сообщений"
+    total_users = "Всего пользователей"
+
+
+def increase_field(field: StatisticField):
+    """
+    increment one statistics field
+    """
+    stats_db_session = Session()
+    stat_field = stats_db_session.query(Stat).filter(Stat.name == field.name)
+    stat_field += 1
+    stats_db_session.commit()
+    stats_db_session.close()
 
 class StatsType(Enum):
     General = "general"

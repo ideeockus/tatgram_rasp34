@@ -6,38 +6,12 @@ from bot import dp
 from bot_storage.accounts_base import get_role, get_sch_identifier
 from aiogram.types import ParseMode
 from actions import pupils_rasp, teachers_rasp, feedback, notify_actions
-# from utils.abg import abg_lost_role
+from bot_storage.Keyboards import cancel_kb
 
 # TODO разделить функционал на common_pupil_handler, headman_handler, parent_handler
 # parent: уведомление о входе / выходе, настройка свободного выхода
 
 
-# def get_current_kb(user_id):
-#     current_role = accounts_base.get_role(user_id)
-#     current_kb = pupil_kb
-#     if current_role == "pupil":
-#         current_kb = pupil_kb
-#     if current_role == "headman":
-#         current_kb = headman_kb
-#     return current_kb
-
-
-# @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
-# async def reg_class(message: types.Message):
-#     class_name = message.text.replace(" ", "")
-#     user_id = message.from_user.id
-#     classes_set = set(map(str.lower, get_all_classes()))
-#     if class_name in classes_set:
-#         accounts_base.set_class_name(user_id, class_name)
-#         # user_kb = headman_kb if roles_base.get_role(user_id) == "headman" else get_current_kb(user_id)
-#         await message.answer("Окей, ты зарегистрирован", reply_markup=get_role_keyboard(get_role(user_id)))
-#         await message.answer("Теперь ты можешь узнать расписание")
-#         await PupilStates.waiting_for_action.set()
-#     else:
-#         await message.answer("Не могу найти такого класса, введите еще раз")
-
-
-# @dp.message_handler(lambda m: m.text in ["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
 @dp.message_handler(text=["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
 async def rasp_today_yesterday(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
@@ -94,7 +68,7 @@ async def teacher_rasp(message: types.Message):
 @dp.message_handler(lambda m: m.text == "Обратная связь", state=PupilStates.waiting_for_action)
 async def pupil_feedback(message: types.Message):
     # user_id = message.from_user.id
-    await message.reply("Что вы хотите сообщить?", reply_markup=feedback.cancel_kb)
+    await message.reply("Что вы хотите сообщить?", reply_markup=cancel_kb)
     await feedback.make_feedback()
 
 

@@ -14,50 +14,12 @@ from middlewares.common_middleware import CommonMiddleware
 from bot_storage import Keyboards
 
 
-# @dp.message_handler(lambda m: m.text in ["Учитель", "Ученик", "Родитель", "Староста", botmaster_role_phrase],
-#                     state=MainStates.wait_for_role)
-# async def choose_role(message: types.Message, state: FSMContext):
-#     cur_state = await state.get_state()
-#     print(cur_state)
-#
-#     roles_list = {'Ученик': "pupil", 'Учитель': "teacher", 'Родитель': "parent",
-#                   botmaster_role_phrase: "master", "Староста": "headman"}
-#     role = roles_list[message.text]
-#     user_id = message.from_user.id
-#     if roles_base.get_role(user_id) is None:
-#         username = message.from_user.username
-#         user_fullname = message.from_user.full_name
-#         roles_base.reg_new(user_id, role, username=username, user_fullname=user_fullname)
-#     else:
-#         roles_base.change_role(user_id, role)
-#         roles_base.set_teacher_name(user_id, None)
-#         roles_base.set_class_name(user_id, None)
-#
-#     if role == "pupil" or role == "parent" or role == "headman":
-#         await message.reply("Введите свой класс", reply_markup=ReplyKeyboardRemove())
-#         await pupil_handler.PupilStates.waiting_for_registration.set()
-#     elif role == "teacher":
-#         await teacher_handler.TeacherStates.waiting_for_identifier.set()
-#         await message.reply("Введите ваше имя")
-#     elif role == "master":
-#         await master_handler.MasterStates.waiting_for_action.set()
-#         await message.answer("Master role activated", reply_markup=master_kb)
-
-
-# @dp.message_handler(state=GuestStates.waiting_for_action)
-# async def choose_option(message: types.Message):
-#
-
-
 @dp.message_handler()
 async def unregistered_msg(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_role = accounts_base.get_role(user_id)
     print(" - unregistered message", user_id, user_role)
     if user_role is None:
-        # await message.answer("Ой, я кажется забыл кто вы")
-        # await message.answer("Пожалуйста, выберите свою роль", reply_markup=choose_role_kb)
-        # await MainStates.wait_for_role.set()
         await message.answer("Выберите опцию", reply_markup=guest_kb)
         await GuestStates.waiting_for_action.set()
     else:
@@ -123,7 +85,6 @@ async def other_msg(message: types.Message, state: FSMContext):
     if user_state == get_role_waiting_for_action_state(get_role(message.from_user.id)).state:
         # for base state
         print("message ignored")
-        pass
         # await message.reply("Не могу определить что мне нужно делать")
         # await message.reply("Throttle rate 2")
         # await dp.throttle(key="1", rate=2, user_id=message.from_user.id)

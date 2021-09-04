@@ -19,7 +19,7 @@ feedback_button = KeyboardButton("Обратная связь")
 
 
 enter_auth_key_btn = KeyboardButton("Ввести ключ аутентификации")
-become_supervisor_btn = KeyboardButton("Supervisor role (testing)")
+become_supervisor_btn = KeyboardButton("Я родитель")
 guest_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 guest_kb.row(enter_auth_key_btn, become_supervisor_btn)
 
