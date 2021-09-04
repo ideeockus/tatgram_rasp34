@@ -3,9 +3,11 @@ from sqlalchemy.orm import sessionmaker
 from bot_storage.configuration import telegram_bot_token, feedback_tg_id
 # from bot_storage.rasp_base import DbSession as dbUpdaterSession
 from bot_storage import engine, Lessons
+from utils import send_direct_message
 
 import requests
 import datetime
+
 
 
 """
@@ -77,11 +79,3 @@ def export_xlsx_to_db(xlsx_file, updater_user_id):
     except Exception as e:
         print("Ошибка при загрузке расписания:", e)
         send_direct_message(updater_user_id, f"Упс! При обновлении базы произошла какая-то ошибка!\n\n{e}")
-
-
-def send_direct_message(chat_id: str, msg_text: str):
-    requests.post(f"https://api.telegram.org/bot{telegram_bot_token}/sendMessage",
-                  data={
-                      "chat_id": chat_id,
-                      "text": msg_text
-                  })

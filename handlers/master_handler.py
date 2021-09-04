@@ -3,7 +3,7 @@ from bot_storage.UserStates import MasterStates
 from bot import dp
 from bot_storage import bot_stats, accounts_base
 from bot_storage.Keyboards import cancel_kb
-from actions import update_global_rasp, broadcast_action
+from actions import update_global_rasp, broadcast_action, upload_account_base
 from actions.pupils_rasp import make_pupil_rasp_request
 from actions.teachers_rasp import make_teacher_rasp_request
 from bot_storage import UserStates
@@ -109,5 +109,5 @@ async def upload_rasp(message: types.Message):
     if not await validate_master(message):
         return
 
-    await message.answer("Пришлите мне xlsx файл с расписанием", reply_markup=cancel_kb)
-    await update_global_rasp.make_global_rasp_update()
+    await message.answer("Пришлите мне список аккаунтов в формате csv", reply_markup=cancel_kb)
+    await upload_account_base.make_accounts_upload()

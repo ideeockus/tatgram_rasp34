@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
-from bot_storage.rasp_base import get_all_classes, get_lessons_for_week_day, get_week_rasp_by_role
+from bot_storage.timetable.rasp_base import get_all_classes, get_lessons_for_week_day, get_week_rasp_by_role
 from bot_storage.accounts_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard

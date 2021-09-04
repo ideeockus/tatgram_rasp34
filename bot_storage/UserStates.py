@@ -20,7 +20,7 @@ class PupilStates(StatesGroup):
     waiting_for_other_class_name = State()  # для другого класса (при запросе расписания)
 
 
-# class ParentStates(StatesGroup): # на данном этапе отдельный стейты не нужны
+# class ParentStates(StatesGroup): # на данном этапе отдельные стейты не нужны
 #     waiting_for_class_name = State()  # ожидание номера класса
 #     waiting_for_action = State()  # ожидание действий
 #     waiting_for_identifier = State()  # ждет название класса

@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from bot_storage.UserStates import PupilStates
-from bot_storage.rasp_base import get_lessons_for_today, get_lessons_for_yesterday
+from bot_storage.timetable.rasp_base import get_lessons_for_today, get_lessons_for_yesterday
 from bot import dp
 from bot_storage.accounts_base import get_role, get_sch_identifier
 from aiogram.types import ParseMode
@@ -22,7 +22,7 @@ async def rasp_today_yesterday(message: types.Message, state: FSMContext):
     if class_name is not None:
         if message.text.lower() == "на сегодня":
             lessons = get_lessons_for_today(class_name)
-            print(lessons)
+            # print(lessons)
             await message.answer(lessons, parse_mode=ParseMode.MARKDOWN_V2)
             await PupilStates.waiting_for_action.set()
         if message.text.lower() == "на завтра":

@@ -61,10 +61,12 @@ def refresh_user_auth_key(user_id: str):
     accounts_db_session.close()
 
 
-def reg_user(user_id: str, role: Roles, username: str,
-             firstname: str, lastname: str, sch_identifier: str = None) -> Optional[Account]:
+def reg_user(user_id: Optional[str], role: Roles, username: Optional[str],
+             firstname: Optional[str], lastname: Optional[str], sch_identifier: str = None) -> Optional[Account]:
     accounts_db_session = DbSession()
-    print(f"Регистрация пользователя {username}[{user_id}] как {role}")
+    # print(f"Регистрация пользователя @{username}[{user_id}] как {role}")
+    print(f"Регистрация пользователя {utils.get_account_human_readable(firstname, lastname, username, user_id)}"
+          f" как {role}")
     # user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
 
     new_user_account = Account(
@@ -75,7 +77,7 @@ def reg_user(user_id: str, role: Roles, username: str,
         role=role,
         sch_identifier=sch_identifier,
         auth_key=gen_uniq_auth_key(),
-        registration_date=datetime.now()
+        registration_date=datetime.now() if user_id else None  # это поле не заполняется пока нет tg_id юзера
     )
     accounts_db_session.add(new_user_account)
     accounts_db_session.commit()
@@ -83,6 +85,27 @@ def reg_user(user_id: str, role: Roles, username: str,
 
     bot_stats.new_user(role.name)
     return new_user_account
+
+
+# def add_new_account(user_id: str, username: str, firstname: str, lastname: str,
+#                     role: Roles, sch_identifier: str, registration_date: datetime) -> Optional[Account]:
+#     accounts_db_session = DbSession()
+#     new_user_account = Account(
+#         user_id=user_id,
+#         username=username,
+#         firstname=firstname,
+#         lastname=lastname,
+#         role=role,
+#         sch_identifier=sch_identifier,
+#         auth_key=gen_uniq_auth_key(),
+#         registration_date=registration_date
+#     )
+#     accounts_db_session.add(new_user_account)
+#     accounts_db_session.commit()
+#     accounts_db_session.close()
+#
+#     bot_stats.new_user(role.name)
+#     return new_user_account
 
 
 def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Account]:
@@ -129,146 +152,6 @@ def set_user_supervisor(user_id: str, supervisor_user_id: str) -> bool:
     return True
 
 
-# def set_user_supervisor_by_auth_key(controlled_user_auth_key: str, supervisor_user_id: str) -> bool:
-#     """
-#     Add supervisor to supervisor_ids of account by auth_key
-#     """
-#     accounts_db_session = DbSession()
-#     print(f"Установка {supervisor_user_id} как родитель для {controlled_user_auth_key}")
-#
-#     supervisor_user: Account = accounts_db_session.query(Account).filter(Account.user_id == supervisor_user_id).scalar()
-#     user: Account = accounts_db_session.query(Account).filter(Account.auth_key == controlled_user_auth_key).scalar()
-#     if user is None:
-#         return False
-#
-#     print("supervisor ids", user.supervisor_user_ids)
-#     user.supervisor_user_ids.append(supervisor_user)
-#
-#     accounts_db_session.commit()
-#     accounts_db_session.close()
-#     return True
-
-
-
-# def reg_supervisor(controlled_auth_key: str, user_id: str, role: Roles, username: str,
-#                    firstname: str, lastname: str) -> Optional[Account]:
-#     """
-#     Reg supervisor
-#     """
-#     accounts_db_session = DbSession()
-#     print(f"Регистрация пользователя {username}[{user_id}] как {role}")
-#
-#     # user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
-#     # if user is not None:
-#     #     print(f"Пользователь {username}[{user_id}] уже зарегестрирован как {user.role}. Аккаунт будет удален")
-#     #     accounts_db_session.delete(user)
-#     #
-#     # new_user_account = Account(
-#     #     user_id=user_id,
-#     #     username=username,
-#     #     firstname=firstname,
-#     #     lastname=lastname,
-#     #     role=role.name,
-#     #     registration_date=datetime.now()
-#     # )
-#     # accounts_db_session.add(new_user_account)
-#
-#     controlled_user = accounts_db_session.query(Account).filter(Account.auth_key == controlled_auth_key).scalar()
-#     if controlled_user is None:
-#
-#     accounts_db_session.commit()
-#     accounts_db_session.close()
-#
-#     bot_stats.new_user(role.name)
-#     return new_user_account
-
-
-# def reg_class(user_id, class_name):
-#     print("__user_base:", f"регистрация {user_id} в классе {class_name}")
-#     user_id = str(user_id)
-#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     if user_record is None:
-#         print(f"Пользователь {user_id} не может быть зарегестрирова в классе, т.к. его нет в базе")
-#         return
-#     user_record.identifier = class_name
-#     roles_db_session.commit()
-
-
-# вроде это теперь не нужно
-# def set_identifier(user_id, identifier):
-#     roles_db_session = DbSession()
-#
-#     print(f"{user_id} теперь зарегестрирован как {identifier}")
-#     user_id = str(user_id)
-#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     if user_record is None:
-#         print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
-#         return
-#     user_record.identifier = identifier
-#     roles_db_session.commit()
-#     roles_db_session.close()
-
-
-# def set_class_name(user_id, class_name):
-#     roles_db_session = DbSession()
-#
-#     print(f"{user_id} зарегестрирован в классе {class_name}")
-#     user_id = str(user_id)
-#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     if user_record is None:
-#         print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
-#         return
-#     user_record.class_name = class_name
-#     roles_db_session.commit()
-#     roles_db_session.close()
-
-
-# def set_teacher_name(user_id, teacher_name):
-#     roles_db_session = DbSession()
-#
-#     print(f"{user_id} зарегестрирован как {teacher_name}")
-#     user_id = str(user_id)
-#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     if user_record is None:
-#         print(f"Пользователь {user_id} не может быть зарегестрирован, т.к. его нет в базе")
-#         return
-#     user_record.teacher_name = teacher_name
-#     roles_db_session.commit()
-#     roles_db_session.close()
-
-
-# def del_user_role(user_id):
-#     roles_db_session = DbSession()
-#
-#     user_id = str(user_id)
-#     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id)
-#     for user_record in user_records:
-#         roles_db_session.delete(user_record)
-#     roles_db_session.commit()
-#     roles_db_session.close()
-
-
-# def change_role(user_id, new_role):
-#     roles_db_session = DbSession()
-#
-#     print(f"Смена роли пользователя {user_id} на {new_role}")
-#     user_id = str(user_id)
-#     # del_user_role(user_id)
-#     user_record = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     if user_record is None:
-#         print("__user_base:", f"Пользователя {user_id} нет в базе")
-#     bot_stats.edit_stat(get_role(user_id), -1)
-#     user_record.role = new_role
-#     # for user_record in user_records:
-#     #     roles_db_session.delete(user_record)
-#     # role_db_record = RoleRecord(user_id=user_id, role=new_role)
-#     # roles_db_session.add(role_db_record)
-#     roles_db_session.commit()
-#     roles_db_session.close()
-#
-#     bot_stats.edit_stat(new_role, 1)
-
-
 def get_role(user_id: str) -> Optional[Roles]:
     accounts_db_session = DbSession()
 
@@ -276,16 +159,7 @@ def get_role(user_id: str) -> Optional[Roles]:
     user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
     if user is None:
         return None
-    # user_role = user_records.role
     accounts_db_session.close()
-    # user_roles = []
-    #
-    # for user_record in user_records:
-    #     # print(f"У пользователя {user_record.user_id} записана роль {user_record.role}")
-    #     user_roles.append(user_record.role)
-    # if len(user_roles) == 0:
-    #     return None
-    # user_role = user_roles[0]
     return user.role
 
 
@@ -294,33 +168,11 @@ def get_sch_identifier(user_id: str) -> str:
 
     # user_id = str(user_id)
     user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
-    print(type(user))
     user_identifier = user.sch_identifier
 
     accounts_db_session.close()
     return user_identifier
 
-
-# def get_class_name(user_id):
-#     roles_db_session = DbSession()
-#
-#     user_id = str(user_id)
-#     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     class_name = user_records.class_name
-#
-#     roles_db_session.close()
-#     return class_name
-#
-#
-# def get_teacher_name(user_id):
-#     roles_db_session = DbSession()
-#
-#     user_id = str(user_id)
-#     user_records = roles_db_session.query(RoleRecord).filter(RoleRecord.user_id == user_id).scalar()
-#     teacher_name = user_records.teacher_name
-#
-#     roles_db_session.close()
-#     return teacher_name
 
 def get_user_fullname(user_id: str):
     accounts_db_session = DbSession()
@@ -330,31 +182,6 @@ def get_user_fullname(user_id: str):
 
     accounts_db_session.close()
     return user_fullname
-
-
-# refactored
-# def get_all_users_ids():
-#     accounts_db_session = DbSession()
-#
-#     user_id_set = set()
-#     users: List[Account] = accounts_db_session.query(Account).all()
-#     for user in users:
-#         user_id_set.add(user.user_id)
-#
-#     accounts_db_session.close()
-#     return user_id_set
-#
-#
-# def get_users_by_role(role: Roles):
-#     accounts_db_session = DbSession()
-#
-#     user_id_set = set()
-#     users = accounts_db_session.query(Account).filter(Account.role == role.name).all()
-#     for user_record in users:
-#         user_id_set.add(user_record.user_id)
-#
-#     accounts_db_session.close()
-#     return user_id_set
 
 
 def get_users_set(role: Roles = None) -> Set[Account]:
@@ -383,3 +210,19 @@ def get_user_by_auth_key(auth_key: str) -> Optional[Account]:
     accounts_db_session.close()
 
     return user
+
+
+def upload_new_accounts_from_csv(accounts_csv) -> int:
+    accounts_list = [csv_row.split(",") for csv_row in accounts_csv.split("\r\n")]
+    registered_accounts_amount = 0
+    for csv_row in accounts_list:
+        if len(csv_row) != 4:
+            continue
+        firstname = csv_row[0]
+        lastname = csv_row[1]
+        role = csv_row[2]
+        sch_identifier = csv_row[3] if csv_row[3].strip() else None
+        reg_user(None, Roles(role), None, firstname, lastname, sch_identifier)
+        registered_accounts_amount += 1
+
+    return registered_accounts_amount

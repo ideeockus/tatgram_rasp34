@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from bot_storage.rasp_db_updater import export_xlsx_to_db
+from bot_storage.timetable.rasp_db_updater import export_xlsx_to_db
 import io
 import threading
 
