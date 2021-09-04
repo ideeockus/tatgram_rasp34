@@ -80,7 +80,8 @@ async def reg_supervisor(message: types.Message):
         return
 
     # reg new user account
-    user_account = accounts_base.reg_user(user_id, Roles.parent, username, user_firstname, user_lastname)
+    user_account = accounts_base.reg_user(user_id, Roles.parent, username, user_firstname,
+                                          user_lastname, controlled_user.sch_identifier)
 
     if user_account is None:
         print(f"Registration user {username}[{user_id}] failed")

@@ -23,7 +23,7 @@ def gen_uniq_auth_key() -> str:
     return generated_auth_key if key_is_unique else gen_uniq_auth_key()
 
 
-def check_account_existence(user_id: str) -> bool:
+def check_account_existence(user_id: int) -> bool:
     accounts_db_session = DbSession()
     account_exists = accounts_db_session.query(Account).filter(Account.user_id == user_id).first() is not None
     accounts_db_session.close()
@@ -31,7 +31,7 @@ def check_account_existence(user_id: str) -> bool:
     return account_exists
 
 
-def unlink_account(user_id: str):
+def unlink_account(user_id: int):
     """
     Отсоеденить аккаунт бота от аккаунта telegram
     """
@@ -50,7 +50,7 @@ def unlink_account(user_id: str):
     accounts_db_session.close()
 
 
-def refresh_user_auth_key(user_id: str):
+def refresh_user_auth_key(user_id: int):
     """
     Обновить ключ авторизации пользователя
     """
@@ -61,7 +61,7 @@ def refresh_user_auth_key(user_id: str):
     accounts_db_session.close()
 
 
-def reg_user(user_id: Optional[str], role: Roles, username: Optional[str],
+def reg_user(user_id: Optional[int], role: Roles, username: Optional[str],
              firstname: Optional[str], lastname: Optional[str], sch_identifier: str = None) -> Optional[Account]:
     accounts_db_session = DbSession()
     # print(f"Регистрация пользователя @{username}[{user_id}] как {role}")
@@ -108,7 +108,7 @@ def reg_user(user_id: Optional[str], role: Roles, username: Optional[str],
 #     return new_user_account
 
 
-def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Account]:
+def authorize_user(auth_key: str, user_id: int, username: str) -> Optional[Account]:
     """
     Авторизовать пользователя
     @return реузльтат авторизации
@@ -132,7 +132,7 @@ def authorize_user(auth_key: str, user_id: str, username: str) -> Optional[Accou
     return user
 
 
-def set_user_supervisor(user_id: str, supervisor_user_id: str) -> bool:
+def set_user_supervisor(user_id: int, supervisor_user_id: int) -> bool:
     """
     Add supervisor to supervisor_ids of account
     """
@@ -152,7 +152,7 @@ def set_user_supervisor(user_id: str, supervisor_user_id: str) -> bool:
     return True
 
 
-def get_role(user_id: str) -> Optional[Roles]:
+def get_role(user_id: int) -> Optional[Roles]:
     accounts_db_session = DbSession()
 
     # user_id = user_id
@@ -163,7 +163,7 @@ def get_role(user_id: str) -> Optional[Roles]:
     return user.role
 
 
-def get_sch_identifier(user_id: str) -> str:
+def get_sch_identifier(user_id: int) -> str:
     accounts_db_session = DbSession()
 
     # user_id = str(user_id)
@@ -174,7 +174,7 @@ def get_sch_identifier(user_id: str) -> str:
     return user_identifier
 
 
-def get_user_fullname(user_id: str):
+def get_user_fullname(user_id: int):
     accounts_db_session = DbSession()
 
     user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
@@ -190,7 +190,7 @@ def get_users_set(role: Roles = None) -> Set[Account]:
     """
     accounts_db_session = DbSession()
 
-    user_id_set = set()
+    user_id_set: Set[int] = set()
     users = accounts_db_session.query(Account).all() if role is None \
         else accounts_db_session.query(Account).filter(Account.role == role.name).all()
 

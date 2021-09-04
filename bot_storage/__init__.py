@@ -20,27 +20,26 @@ class Roles(Enum):
 
 user_supervisor_relationship = Table(
     "user_supervisor_relationship", Base.metadata,
-    # Column("supervisor_id", ForeignKey("accounts_db.user_id"), primary_key=True),
-    # Column("controlled_user_id", ForeignKey("accounts_db.user_id"), primary_key=True)
-    Column("supervisor_id", ForeignKey("accounts_db.user_id"), unique=True, nullable=False),
-    Column("controlled_user_id", ForeignKey("accounts_db.user_id"), unique=True, nullable=False)
+    Column("supervisor_id", ForeignKey("accounts_db.id"), primary_key=True),
+    Column("controlled_user_id", ForeignKey("accounts_db.id"), primary_key=True),
+    # UniqueConstraint('supervisor_id', 'controlled_user_id')
 )
 
 
 class Account(Base):
     __tablename__ = "accounts_db"
     id = Column(Integer, primary_key=True)
-    user_id = Column(String)
+    user_id = Column(Integer, unique=True)
     username = Column(String)
     firstname = Column(String)
     lastname = Column(String)
     role = Column(sqlalchemyEnum(Roles))
-    sch_identifier = Column(String)  # для школьников тут будет название класса
+    sch_identifier = Column(String)
     auth_key = Column(String, unique=True)
     supervisor_user_ids = relationship(
         "Account", secondary=user_supervisor_relationship,
-        primaryjoin=(user_supervisor_relationship.c.controlled_user_id == user_id),
-        secondaryjoin=(user_supervisor_relationship.c.supervisor_id == user_id)
+        primaryjoin=(user_supervisor_relationship.c.controlled_user_id == id),
+        secondaryjoin=(user_supervisor_relationship.c.supervisor_id == id)
     )  # list of supervisors of user
     registration_date = Column(DateTime)
 
