@@ -20,8 +20,10 @@ class Roles(Enum):
 
 user_supervisor_relationship = Table(
     "user_supervisor_relationship", Base.metadata,
-    Column("supervisor_id", ForeignKey("accounts_db.user_id"), primary_key=True),
-    Column("controlled_user_id", ForeignKey("accounts_db.user_id"), primary_key=True)
+    # Column("supervisor_id", ForeignKey("accounts_db.user_id"), primary_key=True),
+    # Column("controlled_user_id", ForeignKey("accounts_db.user_id"), primary_key=True)
+    Column("supervisor_id", ForeignKey("accounts_db.user_id")),
+    Column("controlled_user_id", ForeignKey("accounts_db.user_id"))
 )
 
 
