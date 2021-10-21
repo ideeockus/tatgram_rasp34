@@ -56,10 +56,10 @@ async def get_teacher_name(message: types.Message, state: FSMContext):
         teachers_choose_list_kb = InlineKeyboardMarkup(row_width=2)
         for teacher_full_name in teachers_set:
             if teacher_full_name.find(teacher_name) >= 0:
-                print(teacher_full_name)
+                # print(teacher_full_name)
                 teachers_choose_list.append(teacher_full_name)
                 teacher_full_name_button = InlineKeyboardButton(teacher_full_name.title(),
-                                                                callback_data=teacher_full_name)
+                                                                callback_data=teacher_full_name.strip())
                 teachers_choose_list_kb.insert(teacher_full_name_button)
         if len(teachers_choose_list) < 1:
             await message.reply("Я не нашел такого учителя, введите снова")
