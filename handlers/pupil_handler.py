@@ -32,7 +32,7 @@ def get_current_kb(user_id):
 
 @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
 async def reg_class(message: types.Message):
-    class_name = message.text.replace(" ", "").lower()
+    class_name = message.text.replace(" ", "").lower().replace(" ", "")
     user_id = message.from_user.id
     classes_set = set(map(str.lower, get_all_classes()))
     if class_name in classes_set:
