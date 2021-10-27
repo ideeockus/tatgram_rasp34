@@ -35,7 +35,7 @@ async def reg_class(message: types.Message):
     class_name = message.text.replace(" ", "")
     user_id = message.from_user.id
     classes_set = set(map(str.lower, get_all_classes()))
-    if class_name in classes_set:
+    if class_name.lower() in classes_set:
         roles_base.set_class_name(user_id, class_name)
         # user_kb = headman_kb if roles_base.get_role(user_id) == "headman" else get_current_kb(user_id)
         await message.answer("Окей, ты зарегистрирован", reply_markup=get_current_kb(user_id))
