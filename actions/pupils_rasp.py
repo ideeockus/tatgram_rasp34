@@ -55,7 +55,7 @@ async def make_pupil_rasp_request(message: types.Message, class_name=None):
 
 @dp.message_handler(state=PupilsRaspReqStates.waiting_for_class_name, content_types=types.ContentType.TEXT)
 async def get_class_name(message: types.Message, state: FSMContext):
-    class_name = message.text.lower()
+    class_name = message.text.replace(" ", "").lower()
     print("запрошено раписание класса", class_name)
     classes_set = set(map(str.lower, get_all_classes()))
     if class_name in classes_set:
