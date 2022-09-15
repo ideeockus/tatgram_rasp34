@@ -4,14 +4,24 @@ from aiogram.types import ReplyKeyboardRemove, \
 from datetime import datetime, timedelta
 
 
-# Клавиатура для выбора роли
-pupil_role_button = KeyboardButton("Ученик")
-teacher_role_button = KeyboardButton("Учитель")
-parent_role_button = KeyboardButton("Родитель")
-choose_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-choose_role_kb.row(pupil_role_button, teacher_role_button, parent_role_button)
+# global keys
+from bot_storage.accounts_base import Roles
 
 feedback_button = KeyboardButton("Обратная связь")
+
+# deprecated
+# # Клавиатура для выбора роли
+# pupil_role_button = KeyboardButton("Ученик")
+# teacher_role_button = KeyboardButton("Учитель")
+# parent_role_button = KeyboardButton("Родитель")
+# choose_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+# choose_role_kb.row(pupil_role_button, teacher_role_button, parent_role_button)
+
+
+enter_auth_key_btn = KeyboardButton("Ввести ключ аутентификации")
+become_supervisor_btn = KeyboardButton("Я родитель")
+guest_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+guest_kb.row(enter_auth_key_btn, become_supervisor_btn)
 
 
 # Клавиатура учеников
@@ -19,7 +29,7 @@ rasp_today_button = KeyboardButton("На сегодня")
 rasp_yesterday_button = KeyboardButton("На завтра")
 rasp_by_day_button = KeyboardButton("По дням")
 other_class_rasp_button = KeyboardButton("Для другого класса")
-pupil_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+pupil_kb = ReplyKeyboardMarkup(resize_keyboard=False)  # тут сделал False т.к. вроде так лучше
 pupil_kb.row(rasp_today_button, rasp_yesterday_button)
 pupil_kb.add(rasp_by_day_button)
 pupil_kb.add(other_class_rasp_button)
@@ -83,16 +93,17 @@ broadcast_choose_target_kb.add(teacher_target_btn, pupil_target_btn, parent_targ
 broadcast_choose_target_kb.row(cancel_btn)
 
 # Клавиатура админа
-secret_role_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+master_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 stats_button = KeyboardButton("Статистика")
 broadcast_button = KeyboardButton("Рассылка")
 pupils_rasp_button = KeyboardButton("Расписание школьников")
 teachers_rasp_button = KeyboardButton("Расписание учителей")
 update_rasp_button = KeyboardButton("Загрузить расписание")
-secret_role_kb.add(stats_button)
-secret_role_kb.add(broadcast_button)
-secret_role_kb.add(pupils_rasp_button, teachers_rasp_button)
-secret_role_kb.add(update_rasp_button)
+upload_accounts_button = KeyboardButton("Загрузить базу аккаунтов")
+master_kb.add(stats_button)
+master_kb.add(broadcast_button)
+master_kb.add(pupils_rasp_button, teachers_rasp_button)
+master_kb.add(update_rasp_button, upload_accounts_button)
 
 
 # Клавиатура отмены действия
@@ -101,18 +112,20 @@ cancel_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 cancel_kb.add(cancel_button)
 
 
-def get_role_keyboard(role: str):
+def get_role_keyboard(role: Roles):
     role_keyboard = None
-    if role == "pupil" or role == "parent":
+    if role == Roles.pupil:
         role_keyboard = pupil_kb
-    elif role == "headman":
+    elif role == Roles.headman:
         role_keyboard = headman_kb
-    elif role == "teacher":
+    elif role == Roles.parent:
+        role_keyboard = pupil_kb
+    elif role == Roles.teacher:
         role_keyboard = teacher_kb
-    elif role == "master":
-        role_keyboard = secret_role_kb
+    elif role == Roles.master:
+        role_keyboard = master_kb
     else:
-        role_keyboard = choose_role_kb
+        role_keyboard = guest_kb
     return role_keyboard
 
 

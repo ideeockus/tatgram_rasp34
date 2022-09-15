@@ -2,13 +2,17 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from bot_storage import bot_stats
-from bot_storage.configuration import postgresql_db_url
+from bot_storage.configuration import db_url
 
 from datetime import datetime
 
-from libs import Roles
+from bot_storage.accounts_base import Roles
 
 Base = declarative_base()
+
+# TODO rename to accounts_db
+# user_id | username | firstname | lastname | role | identifier | auth_key | supervisor_user_id | reg date
+# auth_key - ключ авторизации для внутренних сервисов. При генерации нового ключа старый затирается во избежание утечек
 
 
 class RoleRecord(Base):
@@ -24,11 +28,11 @@ class RoleRecord(Base):
     registration_date = Column(DateTime)
 
 
-postgres_db = postgresql_db_url
+postgres_db = db_url
 engine = create_engine(postgres_db, echo=False)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
-# roles_db_session = Session()
+# roles_db_session = DbSession()
 
 
 def reg_new(user_id, role, username="", user_fullname=""):

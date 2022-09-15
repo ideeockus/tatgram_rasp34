@@ -5,23 +5,16 @@ from bot import dp, bot
 from aiogram.types import ParseMode
 from bot_storage.Keyboards import rasp_by_days_kb, cancel_kb
 from bot_storage.Keyboards import InlineKeyboardMarkup, InlineKeyboardButton
-from bot_storage.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day, get_week_rasp_by_role
-from bot_storage.UserStates import TeacherStates
-from utils.abg import md_format
-from bot_storage.roles_base import get_role
+from bot_storage.timetable.rasp_base import get_all_teachers, get_teacher_lessons_for_week_day, get_week_rasp_by_role
+from bot_storage.accounts_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
 from utils.scheduled_tasks import set_message_timeout_and_reset_state
 
 
 class TeacherRaspReqStates(StatesGroup):
-    # waiting_for_action = State()
     waiting_for_inline_week_day_chose = State()
     waiting_for_teacher_name = State()
-
-
-def md_shielding(md_text: str) -> str:
-    return md_text.replace("*", "\\*").replace("`", "\\`").replace("_", "\\_")
 
 
 async def make_teacher_rasp_request(message: types.Message, teacher_name=None):
@@ -108,16 +101,9 @@ async def rasp_by_day_inline_handler(callback_query: types.CallbackQuery, state:
         else:  # запрос по дням
             lessons = get_teacher_lessons_for_week_day(teacher_name, callback_data_text[callback_data])
 
-        # lessons = md_format(lessons)  ### исправление сломаного парсера aiogram
-
         await bot.send_message(user_id, lessons,
-                               parse_mode=ParseMode.MARKDOWN, reply_markup=get_role_keyboard(user_role))
+                               parse_mode=ParseMode.MARKDOWN_V2, reply_markup=get_role_keyboard(user_role))
         await user_waiting_for_action_state.set()
     else:
         await bot.send_message(chat_id=callback_query.message.chat.id, text="для кого вы хотите узнать распиание?")
         await TeacherRaspReqStates.waiting_for_teacher_name.set()
-    # await user_waiting_for_action_state.set()
-
-
-
-

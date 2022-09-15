@@ -1,9 +1,8 @@
 from openpyxl import load_workbook
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from bot_storage import Lessons, engine
+
 import datetime
-from bot_storage.configuration import postgresql_db_url
 
 
 """
@@ -19,31 +18,8 @@ G - 6 room_number
 # speed test
 script_start_time = datetime.datetime.now()
 
-Base = declarative_base()  # декларативный базовый класс
-
-
-class Lessons(Base):
-    __tablename__ = "rasp_db"
-    id = Column(Integer, primary_key=True)
-    class_name = Column(String)
-    week_day = Column(String)
-    lesson_start_time = Column(String)
-    lesson_end_time = Column(String)
-    subject_name = Column(String)
-    room_number = Column(String)
-    teacher_name = Column(String)
-
-
-postgres_db = ""  # <ТУТ ССЫЛКА НА БД>
-if postgres_db == "":
-    postgres_db = postgresql_db_url
-
-# engine = create_engine('sqlite:///databases/rasp.db', echo=False)
-engine = create_engine(postgres_db, echo=False)
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-rasp_session = Session()
+DbSession = sessionmaker(bind=engine)
+rasp_session = DbSession()
 
 rasp_excel = load_workbook("databases/rasp_1_25.09.xlsx", read_only=True)
 rasp = rasp_excel.active
