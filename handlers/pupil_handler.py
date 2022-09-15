@@ -1,12 +1,15 @@
+import re
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
+from bot_storage import FoodMenuPupilCategory
 from bot_storage.UserStates import PupilStates
 from bot_storage.timetable.rasp_base import get_lessons_for_today, get_lessons_for_yesterday, get_all_classes
 from bot import dp
 from bot_storage.accounts_base import get_role, get_sch_identifier
 from aiogram.types import ParseMode
-from actions import pupils_rasp, teachers_rasp, feedback, notify_actions
+from actions import pupils_rasp, teachers_rasp, feedback, notify_actions, make_food_order
 from bot_storage.Keyboards import cancel_kb, pupil_kb, headman_kb
 
 
@@ -71,6 +74,17 @@ async def pupil_feedback(message: types.Message):
     # user_id = message.from_user.id
     await message.reply("Что вы хотите сообщить?", reply_markup=cancel_kb)
     await feedback.make_feedback()
+
+
+@dp.message_handler(lambda m: m.text == "Заказ еды", state=PupilStates.waiting_for_action)
+async def pupil_order_food(message: types.Message):
+    await message.reply("Выбор комплексных обедов", reply_markup=cancel_kb)
+
+    pupil_class = get_sch_identifier(message.from_user.id)
+    pupil_class_number = int(re.findall(r"\d+", pupil_class)[0])
+
+    pupil_food_category = FoodMenuPupilCategory.OLDER if pupil_class_number >= 5 else FoodMenuPupilCategory.JUNIOR
+    await make_food_order.make_food_order(message, pupil_food_category)
 
 
 

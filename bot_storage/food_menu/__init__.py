@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy.orm import sessionmaker
 
@@ -24,6 +24,23 @@ def add_food_item(category: FoodMenuPupilCategory, name: str,
     food_menu_db_session.close()
 
     return new_food_item
+
+
+def get_food_items_by_category(category: FoodMenuPupilCategory) -> List[FoodMenuItem]:
+    food_menu_db_session = DbSession()
+    print(f"Получение списка блюд для {category}")
+
+    items = food_menu_db_session.query(FoodMenuItem).filter(FoodMenuItem.category == category).all()
+
+    return items
+
+
+def get_food_item_by_id(food_item_id: int) -> Optional[FoodMenuItem]:
+    food_menu_db_session = DbSession()
+
+    item = food_menu_db_session.query(FoodMenuItem).filter(FoodMenuItem.id == food_item_id).scalar()
+
+    return item
 
 
 def clear_menu() -> bool:

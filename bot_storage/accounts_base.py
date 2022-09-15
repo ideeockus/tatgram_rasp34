@@ -184,7 +184,7 @@ def get_user_fullname(user_id: int):
     return user_fullname
 
 
-def get_users_set(role: Roles = None) -> Set[Account]:
+def get_users_set(role: Roles = None) -> Set[int]:
     """
     returns ids of users by role, or all available ids if role parameter not specified
     """

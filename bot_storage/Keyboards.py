@@ -29,10 +29,12 @@ rasp_today_button = KeyboardButton("На сегодня")
 rasp_yesterday_button = KeyboardButton("На завтра")
 rasp_by_day_button = KeyboardButton("По дням")
 other_class_rasp_button = KeyboardButton("Для другого класса")
+choose_food_button = KeyboardButton("Заказ еды")
 pupil_kb = ReplyKeyboardMarkup(resize_keyboard=False)  # тут сделал False т.к. вроде так лучше
 pupil_kb.row(rasp_today_button, rasp_yesterday_button)
 pupil_kb.add(rasp_by_day_button)
 pupil_kb.add(other_class_rasp_button)
+pupil_kb.add(choose_food_button)
 pupil_kb.add(feedback_button)
 
 

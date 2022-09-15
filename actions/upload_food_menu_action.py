@@ -1,7 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from bot_storage.accounts_base import upload_new_accounts_from_csv
 from bot_storage.accounts_base import get_role
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
