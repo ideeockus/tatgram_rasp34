@@ -48,6 +48,12 @@ class MasterStates(StatesGroup):
     waiting_for_accounts_base_confirm = State()
 
 
+class FoodManager(StatesGroup):
+    """заведующий производством"""
+    waiting_for_action = State()
+
+
+
 def get_role_waiting_for_action_state(role: Roles):
     if role == Roles.pupil or role == Roles.headman:
         waiting_for_action_state = PupilStates.waiting_for_action

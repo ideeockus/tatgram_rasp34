@@ -11,35 +11,7 @@ from bot_storage.Keyboards import cancel_kb, pupil_kb, headman_kb
 
 
 # TODO разделить функционал на common_pupil_handler, headman_handler, parent_handler
-# parent: уведомление о входе / выходе, настройка свободного выхода
-
-
-
-# def get_current_kb(user_id):
-#     current_role = get_role(user_id)
-#     current_kb = pupil_kb
-#     if current_role == "pupil":
-#         current_kb = pupil_kb
-#     if current_role == "headman":
-#         current_kb = headman_kb
-#     return current_kb
-
-
-# @dp.message_handler(state=PupilStates.waiting_for_registration, content_types=types.ContentType.TEXT)
-# async def reg_class(message: types.Message):
-#     class_name = message.text.replace(" ", "").lower()
-#     user_id = message.from_user.id
-#     classes_set = set(map(str.lower, get_all_classes()))
-#     if class_name in classes_set:
-#         roles_base.set_class_name(user_id, class_name)
-#         # user_kb = headman_kb if roles_base.get_role(user_id) == "headman" else get_current_kb(user_id)
-#         await message.answer("Окей, ты зарегистрирован", reply_markup=get_current_kb(user_id))
-#         await message.answer("Теперь ты можешь узнать расписание")
-#         await PupilStates.waiting_for_action.set()
-#     else:
-#         await message.answer("Не могу найти такого класса, введите еще раз")
-
-
+#  parent: уведомление о входе / выходе, настройка свободного выхода
 
 @dp.message_handler(text=["На сегодня", "На завтра"], state=PupilStates.waiting_for_action)
 async def rasp_today_yesterday(message: types.Message, state: FSMContext):

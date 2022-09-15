@@ -3,7 +3,7 @@ from bot_storage.UserStates import MasterStates
 from bot import dp
 from bot_storage import bot_stats, accounts_base
 from bot_storage.Keyboards import cancel_kb
-from actions import update_global_rasp, broadcast_action, upload_account_base
+from actions import update_global_rasp, broadcast_action, upload_account_base, upload_food_menu_action
 from actions.pupils_rasp import make_pupil_rasp_request
 from actions.teachers_rasp import make_teacher_rasp_request
 from bot_storage import UserStates
@@ -111,3 +111,13 @@ async def upload_rasp(message: types.Message):
 
     await message.answer("Пришлите мне список аккаунтов в формате csv", reply_markup=cancel_kb)
     await upload_account_base.make_accounts_upload()
+
+
+@dp.message_handler(lambda m: m.text == "Загрузить меню", state=MasterStates.waiting_for_action)
+async def upload_food_menu(message: types.Message):
+    print("master upload food menu")
+    if not await validate_master(message):
+        return
+
+    await message.answer("Пришлите новое меню в формате csv", reply_markup=cancel_kb)
+    await upload_food_menu_action.make_food_menu_upload()

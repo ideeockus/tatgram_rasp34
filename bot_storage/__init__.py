@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, ForeignKey, Float
 from sqlalchemy import Enum as sqlalchemyEnum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -70,6 +70,20 @@ class StatFields(Enum):
     PARENTS = "parents"
 
     GET_CLASS_RASP = "get"
+
+
+class FoodMenuPupilCategory(Enum):
+    JUNIOR = "младшие"
+    OLDER = "старшие"
+
+
+class FoodMenuItem(Base):
+    __tablename__ = "food_menu_db"
+    id = Column(Integer, primary_key=True)
+    category = Column(sqlalchemyEnum(FoodMenuPupilCategory))
+    food_name = Column(String)
+    price = Column(Float)
+    description = Column(String)
 
 
 # postgres_db = db_url

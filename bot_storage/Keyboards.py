@@ -100,10 +100,12 @@ pupils_rasp_button = KeyboardButton("Расписание школьников")
 teachers_rasp_button = KeyboardButton("Расписание учителей")
 update_rasp_button = KeyboardButton("Загрузить расписание")
 upload_accounts_button = KeyboardButton("Загрузить базу аккаунтов")
+upload_food_menu_button = KeyboardButton("Загрузить меню")
 master_kb.add(stats_button)
 master_kb.add(broadcast_button)
 master_kb.add(pupils_rasp_button, teachers_rasp_button)
 master_kb.add(update_rasp_button, upload_accounts_button)
+master_kb.add(upload_food_menu_button)
 
 
 # Клавиатура отмены действия
