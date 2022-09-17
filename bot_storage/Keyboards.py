@@ -109,6 +109,12 @@ master_kb.add(pupils_rasp_button, teachers_rasp_button)
 master_kb.add(update_rasp_button, upload_accounts_button)
 master_kb.add(upload_food_menu_button)
 
+# Клавиатура заведующего производством
+food_manager_kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+get_orders_button = KeyboardButton("Посмотреть заказы")
+take_orders_button = KeyboardButton("Собрать заказы")
+food_manager_kb.add(get_orders_button, take_orders_button)
+
 
 # Клавиатура отмены действия
 cancel_button = KeyboardButton("Отмена")
@@ -128,6 +134,8 @@ def get_role_keyboard(role: Roles):
         role_keyboard = teacher_kb
     elif role == Roles.master:
         role_keyboard = master_kb
+    elif role == Roles.food_manager:
+        role_keyboard = food_manager_kb
     else:
         role_keyboard = guest_kb
     return role_keyboard

@@ -78,9 +78,13 @@ async def pupil_feedback(message: types.Message):
 
 @dp.message_handler(lambda m: m.text == "Заказ еды", state=PupilStates.waiting_for_action)
 async def pupil_order_food(message: types.Message):
-    await message.reply("Выбор комплексных обедов", reply_markup=cancel_kb)
+    # await message.reply("Выбор комплексных обедов", reply_markup=cancel_kb)
 
     pupil_class = get_sch_identifier(message.from_user.id)
+    if not pupil_class:
+        await message.reply("Хмм, похоже вы не можете сделать заказ. Свяжитесь с администратором")
+        return
+
     pupil_class_number = int(re.findall(r"\d+", pupil_class)[0])
 
     pupil_food_category = FoodMenuPupilCategory.OLDER if pupil_class_number >= 5 else FoodMenuPupilCategory.JUNIOR

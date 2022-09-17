@@ -7,10 +7,11 @@ from bot_storage.configuration import feedback_tg_id
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
-from bot_storage.accounts_base import get_role
+from bot_storage.accounts_base import get_role, get_user_account_id
 from bot_storage.UserStates import get_role_waiting_for_action_state
 from bot_storage.Keyboards import get_role_keyboard
 from bot_storage.food_menu import get_food_items_by_category, get_food_item_by_id
+from bot_storage.food_menu.orders import add_food_order
 from utils.scheduled_tasks import set_message_timeout_and_reset_state
 
 
@@ -30,6 +31,8 @@ async def make_food_order(message: types.Message, pupil_food_category: FoodMenuP
         button = InlineKeyboardButton(f"{food_item.food_name} - {food_item.price}₽", callback_data=str(food_item.id))
         choose_list_kb.insert(button)
 
+    # TODO: handle case if no menu items available
+
     # отправка
     order_kb_message = await message.answer("Выберите блюдо списка", reply_markup=choose_list_kb)
     set_message_timeout_and_reset_state(message.from_user.id, order_kb_message.chat.id, order_kb_message.message_id)
@@ -42,12 +45,15 @@ async def order_choose_inline(callback_query: types.CallbackQuery, state: FSMCon
 
     food_item_id = int(callback_query.data)
     print("выбор", food_item_id, "с инлайн клавиатуры заказа еды")
-    # TODO: добавить заказ в БД
 
     user_id = callback_query.from_user.id
     user_role = get_role(user_id)
     user_waiting_for_action_state = get_role_waiting_for_action_state(user_role)
     user_keyboard = get_role_keyboard(user_role)
+
+    # доабвление заказа в БД
+    add_food_order(food_item_id, get_user_account_id(user_id))
+    # TODO при повторном выборе заказ должен быть перезаписан (upsert?)
 
     choosen_food_item = get_food_item_by_id(food_item_id)
 

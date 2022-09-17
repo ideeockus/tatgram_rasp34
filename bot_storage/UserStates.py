@@ -48,10 +48,9 @@ class MasterStates(StatesGroup):
     waiting_for_accounts_base_confirm = State()
 
 
-class FoodManager(StatesGroup):
+class FoodManagerStates(StatesGroup):
     """заведующий производством"""
     waiting_for_action = State()
-
 
 
 def get_role_waiting_for_action_state(role: Roles):
@@ -63,6 +62,8 @@ def get_role_waiting_for_action_state(role: Roles):
         waiting_for_action_state = TeacherStates.waiting_for_action
     elif role == Roles.master:
         waiting_for_action_state = MasterStates.waiting_for_action
+    elif role == Roles.food_manager:
+        waiting_for_action_state = FoodManagerStates.waiting_for_action
     else:
         waiting_for_action_state = GuestStates.waiting_for_action
     return waiting_for_action_state

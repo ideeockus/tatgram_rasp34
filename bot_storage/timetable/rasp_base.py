@@ -32,7 +32,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int, update_stats=True):
     for lsn in day_lessons:
         lesson_start = lsn.lesson_start_time[:-3]
         lesson_end = lsn.lesson_end_time[:-3]
-        subject_name = lsn.subject_name
+        subject_name = lsn.subject_name or ""  # empty str if None
         room_number = lsn.room_number
         room_number = text("\n", "кабинет ", room_number) if room_number is not None else ""
         teacher_name = lsn.teacher_name

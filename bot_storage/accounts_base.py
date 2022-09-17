@@ -163,6 +163,16 @@ def get_role(user_id: int) -> Optional[Roles]:
     return user.role
 
 
+def get_user_account_id(user_id: int) -> Optional[int]:
+    accounts_db_session = DbSession()
+
+    user: Account = accounts_db_session.query(Account).filter(Account.user_id == user_id).scalar()
+    if user is None:
+        return None
+    accounts_db_session.close()
+    return user.id
+
+
 def get_sch_identifier(user_id: int) -> str:
     accounts_db_session = DbSession()
 
@@ -216,12 +226,19 @@ def upload_new_accounts_from_csv(accounts_csv) -> int:
     accounts_list = [csv_row.split(",") for csv_row in accounts_csv.split("\r\n")]
     registered_accounts_amount = 0
     for csv_row in accounts_list:
-        if len(csv_row) != 4:
+        if len(csv_row) < 3:
             continue
         firstname = csv_row[0]
         lastname = csv_row[1]
         role = csv_row[2]
-        sch_identifier = csv_row[3] if csv_row[3].strip() else None
+        # sch_identifier = csv_row[3] if csv_row[3].strip() else None
+        # print(len(csv_row))
+        sch_identifier = csv_row[3] if len(csv_row) > 3 else None
+        # if len(csv_row) > 3:
+        #     sch_identifier = csv_row[3]
+        # else:
+        #     sch_identifier = None
+
         reg_user(None, Roles(role), None, firstname, lastname, sch_identifier)
         registered_accounts_amount += 1
 

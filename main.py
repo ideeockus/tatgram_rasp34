@@ -1,10 +1,11 @@
 from aiogram import executor, types, Dispatcher
-from bot_storage.Keyboards import guest_kb
+from bot_storage.Keyboards import guest_kb, food_manager_kb
 from aiogram.dispatcher import FSMContext
 from bot_storage.UserStates import GuestStates, get_role_waiting_for_action_state
 from bot import dp, bot
 from bot_storage.accounts_base import get_role
-from handlers import common_handlers, guest_handlers, teacher_handler, pupil_handler, master_handler  # handlers
+from handlers import common_handlers, guest_handlers, teacher_handler,\
+    pupil_handler, master_handler, food_manager_handler  # handlers
 from bot_storage import accounts_base
 from bot_storage.configuration import feedback_tg_id, creator_id
 from bot_storage.accounts_base import Roles
@@ -31,7 +32,9 @@ async def define_action(message: types.Message, state: FSMContext):
     Определить дальнейшее действие по сообщению и роли пользователя
     (Если вдруг бот перезагрузился посреди диалога)
     """
-    user_id = str(message.from_user.id)
+    # TODO: сделать чтобы стейт сохранялся в БД
+    # user_id = str(message.from_user.id)
+    user_id = message.from_user.id
     user_role = accounts_base.get_role(user_id)
     if user_role == Roles.pupil or user_role == Roles.parent or user_role == Roles.headman:
         await pupil_handler.PupilStates.waiting_for_action.set()
@@ -45,6 +48,8 @@ async def define_action(message: types.Message, state: FSMContext):
             await pupil_handler.req_rasp_for_other_class(message)
         elif message.text == "Расписание учителей":
             await pupil_handler.teacher_rasp(message)
+        elif message.text == "Заказ еды":
+            await pupil_handler.pupil_order_food(message)
         else:
             await message.answer("Здравствуйте", reply_markup=Keyboards.pupil_kb)
     elif user_role == Roles.teacher:
@@ -71,8 +76,20 @@ async def define_action(message: types.Message, state: FSMContext):
             await master_handler.teachers_rasp(message)
         elif message.text == "Загрузить расписание":
             await master_handler.upload_rasp(message)
+        elif message.text == "Загрузить базу аккаунтов":
+            await master_handler.upload_accounts(message)
+        elif message.text == "Загрузить меню":
+            await master_handler.upload_food_menu(message)
         else:
             await message.answer("Команда не распознана")
+    elif user_role == Roles.food_manager:
+        await food_manager_handler.FoodManagerStates.waiting_for_action.set()
+        if message.text == "Посмотреть заказы":
+            await food_manager_handler.view_orders(message)
+        elif message.text == "Собрать заказы":
+            await food_manager_handler.take_orders(message)
+        else:
+            await message.answer("Здравствуйте", reply_markup=food_manager_kb)
     else:
         await message.answer("Команда не определена")
 
