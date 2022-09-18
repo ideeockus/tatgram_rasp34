@@ -1,29 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Callable
-
-from aiogram import Bot
-from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-
 from bot_storage import bot_stats
 from bot import bot
-
-import sched
-import asyncio
-
 from bot_storage.UserStates import get_role_waiting_for_action_state
-from bot_storage.roles_base import get_role
+from bot_storage.accounts_base import get_role
 
-# class ScheduledTask:
-#     def __init__(self, task_datetime: datetime, priority: int, task_func: Callable, task_kwargs: dict):
-#         seconds_until_task_execution = (task_datetime-datetime.now()).seconds
-#         self.scheduler = sched.scheduler()
-#         self.scheduler.enter(seconds_until_task_execution, priority, task_func, kwargs=task_kwargs)
-#
-#     def run_task(self):
-#         self.scheduler.run()
-#
-# asyncio.get_event_loop().call_at()
+import asyncio
 
 
 def set_midnight_stats_clear_task():
@@ -80,10 +62,11 @@ def set_message_timeout(chat_id: int, message_id: int, message_timeout=10):
     asyncio.get_event_loop().call_later(message_timeout, del_msg)
 
 
-def set_message_timeout_and_reset_state(user_id: int, chat_id: int, message_id: int, message_timeout=60):
+def set_message_timeout_and_reset_state(user_id: str, chat_id: int, message_id: int, message_timeout=60):
     #  TODO: add user_state: FSMContext arg with set_state()
     """
-    Сейчас вызывается только в текущем контексте
+    Установить таймаут для сообщения, после которого сообщение удалится и стейт сбросится на дефолтный
+    сейчас вызывается только в текущем контексте
     :param user_id:
     :param chat_id:
     :param message_id:

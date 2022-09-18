@@ -1,4 +1,3 @@
-from aiogram import types
 from bot_storage.configuration import feedback_tg_id, creator_id
 from bot import bot
 

@@ -1,14 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
-from bot_storage.configuration import postgresql_db_url
-from aiogram.utils.markdown import bold, code, italic, text
-
-from libs import Roles
-from utils.abg import md_format
-
+from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from bot_storage.bot_stats import edit_stat, inc_req_stat_by_class
+from bot_storage import engine, Lessons, Roles
 
 """
 A - 0 empty column
@@ -20,26 +14,7 @@ F - 5 subject_name
 G - 6 room_number
 """
 
-
-Base = declarative_base()  # декларативный базовый класс
-
-
-class Lessons(Base):
-    __tablename__ = "rasp_db"
-    id = Column(Integer, primary_key=True)
-    class_name = Column(String)
-    week_day = Column(String)
-    lesson_start_time = Column(String)
-    lesson_end_time = Column(String)
-    subject_name = Column(String)
-    room_number = Column(String)
-    teacher_name = Column(String)
-
-
-postgres_db = postgresql_db_url
-engine = create_engine(postgres_db, echo=False)
-Session = sessionmaker(bind=engine)
-# rasp_session = Session()
+DbSession = sessionmaker(bind=engine)
 
 
 def get_lessons_for_week_day(class_name: str, week_day: int, update_stats=True):
@@ -48,7 +23,7 @@ def get_lessons_for_week_day(class_name: str, week_day: int, update_stats=True):
         edit_stat("get_class_rasp", 1)
         inc_req_stat_by_class(class_name)
 
-    rasp_session = Session()
+    rasp_session = DbSession()
 
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.class_name == class_name.upper(),
@@ -57,25 +32,23 @@ def get_lessons_for_week_day(class_name: str, week_day: int, update_stats=True):
     for lsn in day_lessons:
         lesson_start = lsn.lesson_start_time[:-3]
         lesson_end = lsn.lesson_end_time[:-3]
-        subject_name = lsn.subject_name
+        subject_name = lsn.subject_name or ""  # empty str if None
         room_number = lsn.room_number
         room_number = text("\n", "кабинет ", room_number) if room_number is not None else ""
         teacher_name = lsn.teacher_name
         teacher_name = f"\n{teacher_name}" if teacher_name is not None else ""
-        # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} кабинет {room_number}{teacher_name}\n\n"
         day_lessons_text += text(bold(f"[{lesson_start} - {lesson_end}]"),
-                                 bold(subject_name), room_number, italic(teacher_name), "\n\n")
-
-        # day_lessons_text += (f"[{lesson_start} - {lesson_end}]"+subject_name)+room_number+teacher_name+"\n\n"
+                                 bold(subject_name), escape_md(room_number), italic(teacher_name), "\n\n")
     if day_lessons_text == "":
-        # print("__rasp_base:", "Уроков для класса", class_name, "на", week_days_list[week_day], "не найдено")
         day_lessons_text = "Выходной\n"  # EDIT THIS LINE LATER
     day_lessons_text_result = f"Расписание для класса {str(class_name)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
     day_lessons_text_result += day_lessons_text
 
     rasp_session.close()
-    return md_format(day_lessons_text_result)
+    # return md_format(day_lessons_text_result)
+    # return escape_md(day_lessons_text_result)
+    return day_lessons_text_result
 
 
 def get_lessons_for_today(class_name: str):
@@ -91,7 +64,7 @@ def get_lessons_for_yesterday(class_name: str):
 def get_all_classes():
     classes_set = set()
 
-    rasp_session = Session()
+    rasp_session = DbSession()
 
     classes = rasp_session.query(Lessons.class_name)  # выборка по бд
     for class_name in classes:
@@ -126,12 +99,11 @@ def get_lessons_by_day(day: str, class_name: str):
 def get_all_teachers():
     teachers_set = set()
 
-    rasp_session = Session()
+    rasp_session = DbSession()
 
     teachers = rasp_session.query(Lessons.teacher_name)  # выборка по бд
     for teacher_name in teachers:
         teacher_name = teacher_name.teacher_name
-        # print("teacher_name: ", teacher_name)
         if teacher_name is None or teacher_name == "":
             continue
         if teacher_name.find("/") >= 0:
@@ -150,7 +122,7 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int, update_stats=T
         edit_stat("get_rasp_total", 1)
         edit_stat("get_teacher_rasp", 1)
 
-    rasp_session = Session()
+    rasp_session = DbSession()
 
     week_days_list = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     day_lessons = rasp_session.query(Lessons).filter(Lessons.teacher_name.ilike(f"%{teacher}%"),
@@ -164,12 +136,10 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int, update_stats=T
         class_name = lsn.class_name
         room_number = lsn.room_number
         room_number = text(f"в кабинете ", bold(room_number)) if room_number is not None else ""
-        # day_lessons_text += f"[{lesson_start} - {lesson_end}] {subject_name} у {class_name} {room_number}\n"
-        # day_lessons_dict[lesson_start] = f"[{lesson_start} - {lesson_end}] {subject_name} у {class_name} {room_number}\n"
-        day_lessons_dict[lesson_start] = text(f"[[{lesson_start} - {lesson_end}]]",
-                                              italic(subject_name), "у", bold(class_name), room_number, "\n\n")
+        day_lessons_dict[lesson_start] = text(bold(f"[{lesson_start} - {lesson_end}]"),
+                                              italic(subject_name), "у", bold(class_name),
+                                              room_number, "\n\n")
     if len(day_lessons_dict) == 0:
-        # print("__rasp_base:", "Уроков для учителя", teacher, "на", week_days_list[week_day], "не найдено")
         day_lessons_dict['dayoff'] = "Выходной\n"
     day_lessons_text_result = f"Расписание для учителя {str(teacher)}:\n\n"
     day_lessons_text_result += "📅 " + week_days_list[week_day] + "\n"
@@ -180,7 +150,9 @@ def get_teacher_lessons_for_week_day(teacher: str, week_day: int, update_stats=T
         day_lessons_text_result += day_lessons_dict[start_time]
 
     rasp_session.close()
-    return md_format(day_lessons_text_result)
+    # return md_format(day_lessons_text_result)
+    # return escape_md(day_lessons_text_result)
+    return day_lessons_text_result
 
 
 def get_week_rasp_by_role(role: str, identifier: str):
@@ -208,10 +180,3 @@ def get_week_rasp_by_role(role: str, identifier: str):
             day_rasp = get_lessons_for_week_day(identifier, day_num, False)
             week_rasp += day_rasp[day_rasp.index("\n"):]  # без первой строки
     return f"Расписание на неделю для {identifier}\n" + week_rasp
-
-
-
-
-
-
-
