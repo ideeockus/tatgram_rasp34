@@ -1,6 +1,6 @@
 from aiogram import types
 
-from actions import view_food_orders
+from actions import view_food_orders, take_food_orders
 from bot import dp
 from bot_storage.Keyboards import cancel_kb
 from bot_storage.UserStates import FoodManagerStates
@@ -13,5 +13,5 @@ async def view_orders(message: types.Message):
 
 @dp.message_handler(lambda m: m.text == "Собрать заказы", state=FoodManagerStates.waiting_for_action)
 async def take_orders(message: types.Message):
-    pass
+    await take_food_orders.make_take_food_orders(message)
     # await make_food_order.make_food_order(message, pupil_food_category)

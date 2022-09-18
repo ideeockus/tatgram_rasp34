@@ -118,7 +118,7 @@ async def empty_callback_query(callback_query: types.CallbackQuery, state: FSMCo
 
 @dp.errors_handler()
 async def error_handler(update: types.Update, exception: Exception):
-    error_info_message = "Возникла какая-то ошибка 🙄, описание недоступно. Возможно пора вызывать магов 🔮\n\n"
+    error_info_message = "Возникла какая-то ошибка 🙄, описание недоступно... \n\n"
     try:
         error_info_message = "🙄🙄🙄\nСообщение для администратора:\n" \
                              "Произошла ошибка при обработке сообщения пользователя " \
@@ -127,8 +127,9 @@ async def error_handler(update: types.Update, exception: Exception):
                              f"Сообщение: {update.message.text}\n\n" \
                              "Подробнее смотрите в логах.\n" + str(exception)
     except Exception as e:
-        error_info_message += f"Ну, зато вот ошибка из-за которой описание недоступно:\n {e}\n\n"
-        error_info_message += f"И еще вот какая-то штука:\n {str(exception)}"
+        error_info_message = "Возникла ошибка 🙄\n\n"
+        error_info_message += f"{str(exception)}\n\n"
+        error_info_message += f"А еще (менее важно):\n{e}\n"
     if feedback_tg_id == creator_id:
         await bot.send_message(creator_id, error_info_message)
         return
