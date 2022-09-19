@@ -42,7 +42,7 @@ This is convenient when running as a systemd-unit or in a container.
 
 **YADISK_TOKEN** - token for Yandex.Disk API.
 **TG_BOT_TOKEN** - Telegram bot API token.
-**FEEDBACK_TG_ID** - Telegram ID of person who will receive feedbacks and error reports
+**FEEDBACK_TG_IDS** - Telegram IDs of persons who will receive feedbacks and error reports
 **DATABASE_URL** - Database URL. Tested with PostgreSQL and SQLite.
 **ALLOW_BROADCASTS** -  Set 1 to allow broadcasts from administrator role.
 

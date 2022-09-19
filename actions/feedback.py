@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from bot_storage.configuration import feedback_tg_id
+from bot_storage.configuration import feedback_tg_ids
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode
@@ -38,7 +38,8 @@ async def feedback_text_gotten(message: types.Message, state: FSMContext):
                         )
     print(feedback_msg)
     try:
-        await bot.send_message(feedback_tg_id, feedback_msg, parse_mode=ParseMode.MARKDOWN_V2)
+        for feedback_tg_id in feedback_tg_ids:
+            await bot.send_message(feedback_tg_id, feedback_msg, parse_mode=ParseMode.MARKDOWN_V2)
     except (BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError) as e:
         print("Отправка фидбека не удалась")
         print(e)

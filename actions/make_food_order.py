@@ -3,7 +3,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
 from bot_storage import FoodMenuPupilCategory
-from bot_storage.configuration import feedback_tg_id
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton

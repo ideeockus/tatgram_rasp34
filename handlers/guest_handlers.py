@@ -6,7 +6,7 @@ from bot import dp, bot
 from bot_storage.Keyboards import master_kb
 from bot_storage import accounts_base
 from bot_storage.accounts_base import Roles
-from bot_storage.configuration import botmaster_role_phrase, feedback_tg_id, creator_id
+from bot_storage.configuration import botmaster_role_phrase
 
 
 @dp.message_handler(state=GuestStates.waiting_for_action)
