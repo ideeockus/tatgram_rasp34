@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from bot import dp, bot
-from bot_storage import FoodMenuPupilCategory
+from bot_storage import FoodMenuPupilCategory, accounts_base
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
 from aiogram.utils.markdown import bold, code, italic, text, escape_md
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
@@ -50,9 +50,16 @@ async def order_choose_inline(callback_query: types.CallbackQuery, state: FSMCon
     user_waiting_for_action_state = get_role_waiting_for_action_state(user_role)
     user_keyboard = get_role_keyboard(user_role)
 
+    await user_waiting_for_action_state.set()
+
+    # название класса
+    class_identifier = accounts_base.get_sch_identifier(user_id)
+    if not class_identifier:
+        await callback_query.message.answer("Похоже, вы не школьник! К сожалению вы не можете сделать заказ.")
+        return
+
     # доабвление заказа в БД
     add_food_order(food_item_id, get_user_account_id(user_id))
-    # TODO при повторном выборе заказ должен быть перезаписан (upsert?)
 
     choosen_food_item = get_food_item_by_id(food_item_id)
 
@@ -62,5 +69,4 @@ async def order_choose_inline(callback_query: types.CallbackQuery, state: FSMCon
                      italic(f"{choosen_food_item.description}\n"),
                      )
 
-    await user_waiting_for_action_state.set()
     await callback_query.message.answer(order_msg, parse_mode=ParseMode.MARKDOWN_V2, reply_markup=user_keyboard)
