@@ -1,11 +1,9 @@
 from openpyxl import load_workbook
 from sqlalchemy.orm import sessionmaker
-from bot_storage.configuration import telegram_bot_token, feedback_tg_id
-# from bot_storage.rasp_base import DbSession as dbUpdaterSession
+from bot_storage.configuration import telegram_bot_token, feedback_tg_ids
 from bot_storage import engine, Lessons
 from utils import send_direct_message
 
-import requests
 import datetime
 
 
@@ -74,8 +72,10 @@ def export_xlsx_to_db(xlsx_file, updater_user_id):
                             "Всего затрачено "+str(total_processing_time)+" секунд"
 
         send_direct_message(updater_user_id, rasp_updated_text)
-        if str(updater_user_id) != str(feedback_tg_id):
-            send_direct_message(feedback_tg_id, rasp_updated_text)
+
+        for feedback_tg_id in feedback_tg_ids:
+            if str(updater_user_id) != str(feedback_tg_id):
+                send_direct_message(feedback_tg_id, rasp_updated_text)
     except Exception as e:
         print("Ошибка при загрузке расписания:", e)
         send_direct_message(updater_user_id, f"Упс! При обновлении базы произошла какая-то ошибка!\n\n{e}")

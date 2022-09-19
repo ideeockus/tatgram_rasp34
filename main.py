@@ -7,7 +7,7 @@ from bot_storage.accounts_base import get_role
 from handlers import common_handlers, guest_handlers, teacher_handler,\
     pupil_handler, master_handler, food_manager_handler  # handlers
 from bot_storage import accounts_base
-from bot_storage.configuration import feedback_tg_id, creator_id
+from bot_storage.configuration import feedback_tg_ids
 from bot_storage.accounts_base import Roles
 from utils.scheduled_tasks import set_weakly_stats_clear_task
 from actions.notify_actions import quiet_admin_notification
@@ -130,11 +130,9 @@ async def error_handler(update: types.Update, exception: Exception):
         error_info_message = "Возникла ошибка 🙄\n\n"
         error_info_message += f"{str(exception)}\n\n"
         error_info_message += f"А еще (менее важно):\n{e}\n"
-    if feedback_tg_id == creator_id:
-        await bot.send_message(creator_id, error_info_message)
-        return
-    await bot.send_message(feedback_tg_id, error_info_message)
-    await bot.send_message(creator_id, error_info_message)
+
+    for feedback_tg_id in feedback_tg_ids:
+        await bot.send_message(feedback_tg_id, error_info_message)
     # ## psycopg2.errors.AdminShutdown exception handler ?
 
 

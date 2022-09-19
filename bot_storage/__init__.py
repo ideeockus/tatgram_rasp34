@@ -91,8 +91,7 @@ class FoodOrder(Base):
     __tablename__ = "food_orders_db"
     id = Column(Integer, primary_key=True)
     food_item_id = Column(Integer, ForeignKey("food_menu_db.id"))
-    # amount = Column(Integer)
-    user_id = Column(Integer, ForeignKey("accounts_db.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("accounts_db.id"), unique=True)  # it is account_id in fact (not tg user id)
 
 
 # postgres_db = db_url
