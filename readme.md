@@ -1,5 +1,5 @@
 ## Telegram bot for school
-_This project will be present on International Forum_
+_This project was presented on International Forum_
 [Kazan Digital Week 2022](https://kazandigitalweek.com/en/site)
 
 This bot hepls to view the school schedule and order food.
